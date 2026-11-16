@@ -9,7 +9,7 @@ for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json hooks/hooks.
   python3 -m json.tool "$f" >/dev/null 2>&1 || err "$f: invalid JSON"
 done
 
-for f in hooks/*.sh scripts/*.sh; do
+for f in hooks/*.sh scripts/*.sh bin/*; do
   bash -n "$f" || err "$f: syntax"
 done
 
@@ -44,29 +44,41 @@ tmp=$(mktemp -d)
   export CLAUDE_PROJECT_DIR="$tmp"
 
   echo "const b = 2;" >> a.ts && git add a.ts
-  bash "$guard" 2>/dev/null || { echo "FAIL guard blocked a clean diff"; exit 1; }
+  bash "$guard" </dev/null 2>/dev/null || { echo "FAIL guard blocked a clean diff"; exit 1; }
 
   printf '// TO%s: later\n' "DO" >> a.ts && git add a.ts
-  bash "$guard" 2>/dev/null; [ $? -eq 2 ] || { echo "FAIL guard passed a deferral marker"; exit 1; }
+  bash "$guard" </dev/null 2>/dev/null; [ $? -eq 2 ] || { echo "FAIL guard passed a deferral marker"; exit 1; }
   git checkout -q HEAD -- a.ts 2>/dev/null; git reset -q --hard
 
   printf '// @ts-ig%s\n' "nore" >> a.ts
-  bash "$guard" 2>/dev/null; [ $? -eq 2 ] || { echo "FAIL guard passed an unstaged suppression"; exit 1; }
+  bash "$guard" </dev/null 2>/dev/null; [ $? -eq 2 ] || { echo "FAIL guard passed an unstaged suppression"; exit 1; }
   git reset -q --hard
 
   printf '// @ts-expect-er%s vendor bug, see #12\n' "ror" >> a.ts && git add a.ts
-  bash "$guard" 2>/dev/null || { echo "FAIL guard blocked a line that references an issue"; exit 1; }
+  bash "$guard" </dev/null 2>/dev/null || { echo "FAIL guard blocked a line that references an issue"; exit 1; }
   git reset -q --hard
 
+  echo '{"tool_input":{"command":"git commit --no-verify -m x"}}' | bash "$guard" 2>/dev/null
+  [ $? -eq 2 ] || { echo "FAIL guard passed --no-verify"; exit 1; }
+
   printf 'TO%s list\n' "DO" > notes.md && git add notes.md
-  bash "$guard" 2>/dev/null || { echo "FAIL guard scanned markdown"; exit 1; }
+  bash "$guard" </dev/null 2>/dev/null || { echo "FAIL guard scanned markdown"; exit 1; }
 ) || fail=1
+rm -rf "$tmp"
+
+run="$root/bin/ult-run"
+tmp=$(mktemp -d)
+out=$(CLAUDE_PROJECT_DIR="$tmp" bash "$run" 'seq 1 500'); code=$?
+{ [ $code -eq 0 ] && [ "$(printf '%s\n' "$out" | wc -l)" -eq 1 ] && [[ $out == PASS* ]]; } || err "ult-run: a passing command should print one PASS line"
+out=$(CLAUDE_PROJECT_DIR="$tmp" ULT_TAIL=5 bash "$run" 'seq 1 500; exit 3'); code=$?
+{ [ $code -eq 3 ] && [ "$(printf '%s\n' "$out" | wc -l)" -eq 6 ] && [[ $out == FAIL* ]]; } || err "ult-run: a failing command should keep its exit code and print the tail"
+out=$(CLAUDE_PROJECT_DIR="$tmp" bash "$run" echo two words); [[ $out == PASS* ]] || err "ult-run: argv form failed"
 rm -rf "$tmp"
 
 out=$(CLAUDE_PLUGIN_ROOT="$root" CLAUDE_PROJECT_DIR="$root" bash hooks/session-start.sh)
 printf '%s' "$out" | grep -q "ult core rules" || err "session-start.sh did not print the core rules"
 
-CLAUDE_PROJECT_DIR="$root" bash "$guard" 2>/dev/null || err "this repo's own diff trips the commit guard"
+CLAUDE_PROJECT_DIR="$root" bash "$guard" </dev/null 2>/dev/null || err "this repo's own diff trips the commit guard"
 
 [ "$fail" -eq 0 ] && echo "PASS core=${words}w skills=$(ls skills | wc -l) agents=$(ls agents | wc -l)"
 exit "$fail"

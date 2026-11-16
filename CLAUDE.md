@@ -6,6 +6,7 @@ A Claude Code plugin (`ult`): skills, subagents and hooks. No build step. Design
 
 - `hooks/core.md`: the always-on rules, injected at session start. Every line costs tokens in every session.
 - `skills/<name>/SKILL.md`: loaded on demand. Sibling `.md` files are loaded only when the skill points to them.
+- `bin/ult-run`: the quiet check runner. One line on success, the tail on failure, full log in `.ult/logs/`.
 - `agents/<name>.md`: subagents. `scout`, `verifier` and `design-scout` run on Haiku; `reviewer` on Sonnet.
 
 ## Writing rules for this repo

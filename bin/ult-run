@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+if [ $# -eq 0 ]; then
+  echo "usage: ult-run <command>   (one quoted string runs through bash -c)" >&2
+  exit 64
+fi
+
+dir="${CLAUDE_PROJECT_DIR:-$PWD}/.ult/logs"
+mkdir -p "$dir"
+log="$dir/$(date +%Y%m%d-%H%M%S)-$$.log"
+ls -1t "$dir"/*.log 2>/dev/null | tail -n +20 | xargs -r rm -f
+
+start=$SECONDS
+if [ $# -eq 1 ]; then
+  bash -c "$1" >"$log" 2>&1
+else
+  "$@" >"$log" 2>&1
+fi
+code=$?
+took=$((SECONDS - start))
+lines=$(wc -l <"$log")
+
+if [ "$code" -eq 0 ]; then
+  echo "PASS ${took}s, ${lines} lines of output in ${log}"
+else
+  echo "FAIL exit ${code}, ${took}s. Last ${ULT_TAIL:-40} of ${lines} lines (full log: ${log}):"
+  tail -n "${ULT_TAIL:-40}" "$log"
+fi
+exit "$code"

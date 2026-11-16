@@ -37,13 +37,14 @@ It asks you something only when a decision is a one-way door or the request has 
 
 ## What is in it
 
-**Always on** (`hooks/core.md`, about 300 words, injected at session start): eight rules covering goal before code, one change per check, never weakening a check, comments, tending the codebase, deferring with issues, guarding context, and factual reports.
+**Always on** (`hooks/core.md`, about 340 words, injected at session start): nine rules covering goal before code, one change per check, never weakening a check, comments, tending the codebase, deferring with issues, guarding context, encoding lessons, and factual reports.
 
 **Skills**, loaded only when needed:
 
 | Skill | Purpose |
 | --- | --- |
 | `ship` | The end-to-end workflow above |
+| `debug` | Reproduce, shrink, locate by halving, fix at the origin, pin with a regression test |
 | `goal` | The goal contract: commands that decide whether the task is done. Includes the hillclimb loop for metrics |
 | `map` | The feature map in `docs/map/`: what the product does, where each feature lives, how to verify it |
 | `garden` | Module shape, pruning and the comment policy, with stack files for TypeScript/React/Next.js and Rust/Go |
@@ -58,17 +59,21 @@ It asks you something only when a decision is a one-way door or the request has 
 | Agent | Model | Job |
 | --- | --- | --- |
 | `scout` | Haiku | Find code and report locations, not contents |
-| `verifier` | Haiku | Run checks, return pass or fail and only the failures |
+| `verifier` | Haiku | Group and trim a long failing check |
 | `design-scout` | Haiku | Measure reference sites |
 | `reviewer` | Sonnet | Review the diff with fresh context before the PR |
 
-**Hook**: `commit-guard.sh` blocks a `git commit` that adds deferral markers or lint and type suppressions to code, unless the line references an issue number. The rule is enforced by a script, so it costs no context and cannot be argued with.
+**Quiet runner** (`bin/ult-run`): wraps any check command. Success prints one line; failure prints the last 40 lines; the full log goes to `.ult/logs/`. Most check runs cost a few tokens and need no subagent.
+
+**Task file** (`.ult/task.md`): `ship` writes the goal contract and the slice checklist here and ticks slices as they land. After context compaction or in a new session, the session-start hook points the agent back to it, so a long task resumes where it stopped.
+
+**Hook**: `commit-guard.sh` blocks a `git commit` that adds deferral markers or lint and type suppressions to code, unless the line references an issue number, and blocks `--no-verify`. The rule is enforced by a script, so it costs no context and cannot be argued with.
 
 ## Why it is built this way
 
 **A verifiable goal replaces judgment calls.** Every task starts with a goal contract: commands and the output that means success, seen failing before work starts. That gives the agent what a reward signal gives a learner. It also removes the most expensive failure, which is declaring done on work that does not work.
 
-**Context is the budget.** The always-loaded cost is about 1,000 tokens (core rules plus skill and agent descriptions). Everything else is behind a pointer: a skill body loads when its task comes up, and a reference file loads only when the skill's step calls for it. Exploration and test logs go to Haiku subagents that return a few lines. The feature map means most tasks begin with a 60-line read instead of a search.
+**Context is the budget.** The always-loaded cost is about 1,000 tokens (core rules plus skill and agent descriptions). Everything else is behind a pointer: a skill body loads when its task comes up, and a reference file loads only when the skill's step calls for it. Check output goes through the quiet runner and exploration goes to a Haiku subagent that returns a few lines. The feature map means most tasks begin with a 60-line read instead of a search.
 
 **Comments are a symptom.** A comment that explains a workaround is where the code should have been fixed. The policy allows three kinds (public API contract, linked external constraint, license), the reviewer audits every added comment, and the commit guard catches the markers.
 
@@ -78,7 +83,9 @@ It asks you something only when a decision is a one-way door or the request has 
 
 **Auto-merge is narrow on purpose.** A PR merges itself only when it is a two-way door, stays in one feature area, avoids auth, payments, schema, public API, dependencies and infrastructure, has green CI, and passed review with no blocker. Everything else waits for you.
 
-**Few parts.** Nine skills and four agents. A rule is in the stack only if an agent does worse without it.
+**Lessons become structure.** A correction or a repeated mistake is turned into a test, a type, a lint rule or a map gotcha, so the next session cannot repeat it and no context is spent remembering it.
+
+**Few parts.** Ten skills and four agents. A rule is in the stack only if an agent does worse without it.
 
 ## Changing it
 

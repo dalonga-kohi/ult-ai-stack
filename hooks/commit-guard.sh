@@ -3,6 +3,11 @@
 cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || exit 0
 git rev-parse --git-dir >/dev/null 2>&1 || exit 0
 
+if cat 2>/dev/null | grep -q -- '--no-verify'; then
+  echo "ult commit guard: --no-verify skips the repo's own hooks. Fix what the hook reports and commit without it." >&2
+  exit 2
+fi
+
 diff=$(git diff --cached -U0 --no-color -- . ':(exclude)*.md' 2>/dev/null)
 [ -z "$diff" ] && diff=$(git diff HEAD -U0 --no-color -- . ':(exclude)*.md' 2>/dev/null)
 [ -z "$diff" ] && exit 0
