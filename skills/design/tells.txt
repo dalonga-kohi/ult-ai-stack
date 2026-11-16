@@ -1,0 +1,21 @@
+bg-clip-text
+(from|via|to)-(purple|violet|indigo|fuchsia)-[0-9]
+hover:scale-1[0-9][0-9]
+hover:-translate-y-
+animate-(ping|bounce)
+transition-all
+transition:[[:space:]]*all
+blur-(2xl|3xl)
+backdrop-(blur|filter)
+href=["']#?["']
+lorem ipsum
+(john|jane) (doe|smith)
+acme (inc|corp|co)
+(via\.placeholder|placehold\.co|placekitten|picsum\.photos|source\.unsplash)
+(vite \+ react|create next app|vite\.svg|next\.svg|react\.svg)
+(seamless|effortless)
+(supercharge|unleash|empower|elevate your|unlock (the|your)|streamline|revolutioni[sz]e|reimagine)
+(cutting-edge|game-chang|next-gen|world-class|best-in-class|state-of-the-art|blazing|lightning[- ]fast|all-in-one)
+(to the next level|say goodbye to|look no further|in today's|whether you're|the future of|made (simple|easy)|like never before)
+(oops|something went wrong|are you sure|welcome back!|click here|you're all set)
+\p{Emoji_Presentation}

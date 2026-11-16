@@ -48,6 +48,51 @@ if grep -nE '\$\(cat <<|<<-?.?EOF' skills/*/*.md agents/*.md; then
   err "skills and agents must not use heredocs: they do not run in PowerShell"
 fi
 
+scale() { grep -E '^(90-100|75-89|60-74|40-59|0-39) ' "$1"; }
+[ "$(scale agents/reviewer.md | wc -l)" -eq 5 ] || err "agents/reviewer.md: the grading scale needs 5 bands"
+[ "$(scale agents/reviewer.md)" = "$(scale agents/critic.md)" ] || err "agents/reviewer.md and agents/critic.md: the grading scale differs"
+
+tells_cases() {
+  local tells=skills/design/tells.txt tmp hits
+  if grep -q '^$' "$tells"; then err "$tells: a blank line matches every line"; return; fi
+  tmp=$(mktemp -d)
+  grep -v '^\\p{' "$tells" > "$tmp/ere"
+  cat > "$tmp/slop.tsx" <<'SLOP'
+<h1 className="bg-clip-text text-transparent">x</h1>
+<div className="bg-gradient-to-r from-purple-500 to-pink-500" />
+<div className="hover:scale-105" />
+<div className="transition-all" />
+<div className="backdrop-blur-md" />
+<a href="#">Pricing</a>
+<p>Lorem ipsum dolor</p>
+<p>John Doe, Acme Inc</p>
+<title>Vite + React</title>
+<p>A seamless way to work</p>
+<h2>Supercharge your workflow</h2>
+<p>Blazing fast and all-in-one</p>
+<p>Take your team to the next level</p>
+<p>Oops! Something went wrong</p>
+SLOP
+  cat > "$tmp/clean.tsx" <<'CLEAN'
+<a href="/pricing">See pricing</a>
+<div className="transition-colors from-stone-100 to-stone-200 blur-sm" />
+<button>Delete 3 invoices</button>
+<p>Cold start in 40 ms. Send invoices from your terminal.</p>
+<p>This deletes 3 invoices and cannot be undone.</p>
+CLEAN
+  hits=$(grep -E -i -c -f "$tmp/ere" "$tmp/slop.tsx")
+  [ "$hits" -eq 14 ] || err "$tells: matched $hits of 14 slop lines"
+  hits=$(grep -E -i -c -f "$tmp/ere" "$tmp/clean.tsx")
+  [ "$hits" -eq 0 ] || err "$tells: matched $hits clean lines"
+  if command -v rg >/dev/null 2>&1; then
+    hits=$(rg -i -c -f "$tells" "$tmp/slop.tsx")
+    [ "$hits" -eq 14 ] || err "$tells under rg: matched $hits of 14 slop lines"
+    rg -i -q -f "$tells" "$tmp/clean.tsx" && err "$tells under rg: matched a clean line"
+  fi
+  rm -rf "$tmp"
+}
+tells_cases
+
 guard_cases() {
   local label=$1 tmp; shift
   tmp=$(mktemp -d)

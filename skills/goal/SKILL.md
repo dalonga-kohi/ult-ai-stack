@@ -38,3 +38,9 @@ Keep it in your reply and copy it into the PR's Evidence section at the end.
 ## Use it
 
 After every change, run the narrowest check that covers it. Green: commit and move on. Red: read the failure, form one hypothesis, change one thing. Revert a change that did not help; do not leave it in as "might be useful".
+
+## Prove the checks bite
+
+When the work is finished and committed, break it on purpose. Pick up to three changed lines that carry behavior (a condition, a boundary, a call with an effect; one line for small work). For each: break the line, run the narrowest check, then `git restore <file>`.
+
+A mutant that leaves the checks green marks a missing test. Write the test, watch it catch the mutant, commit it. End with `git status` clean and record `Mutants: 3/3 caught` next to the contract: the reviewer scores `proven` from it.

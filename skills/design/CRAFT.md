@@ -41,22 +41,12 @@ Check these against the rendered result, in priority order. Each is a measuremen
 
 Themed from the palette: text selection, caret, scrollbars, focus rings, link underline offset, form autofill, the 404 page, the empty state, the loading state, favicon and social preview image. These are the cheapest signals that a page was built and not assembled.
 
-## 7. Copy
+## 7. Holds up
 
-- Buttons name their action ("Create invoice", not "Submit"). Empty states say what goes here and how to add it.
-- The product's own vocabulary, consistent across the UI. Counts pluralize correctly. Old timestamps become absolute dates.
+- Real content at its extremes: zero, one and many items; a 40-character name; a long word with no spaces; a translated string a third longer.
+- The URL carries the state a user would share or return to (tab, filter, page, open item). Back works. A refresh keeps the place.
+- The page title, favicon and social preview are the product's own, not the framework's.
+- The browser console is clean: no errors, no hydration warnings, no failed requests.
+- Every link, button and field does something real.
 
-## Refuse by default
-
-These are the tells of UI nobody decided on. Use one only when the direction in `DESIGN.md` asks for it by name.
-
-- A grid of identical cards (icon, heading, two lines) as the page structure; cards nested in cards.
-- The hero template: giant number or headline, small label, three stats, gradient accent.
-- A small uppercase eyebrow label above every heading. Section numbering (01, 02, 03) that carries no information.
-- Gradient text. Purple-to-blue gradients on white. Glass blur as decoration.
-- A thick colored left border on cards and callouts.
-- Emoji or Unicode glyphs as icons. Use one icon set at one stroke weight.
-- Monospace as a costume for "technical". The system font stack as the display face of a brand page.
-- Every section fading up on scroll with the same animation.
-- Sparklines, progress rings and rounded gray rectangles standing in for content.
-- Centered everything. Uniform rounded corners on every element regardless of size.
+What makes a finished page look generated is in `SLOP.md`; the words on it are covered by `COPY.md`.

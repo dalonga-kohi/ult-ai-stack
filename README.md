@@ -28,16 +28,16 @@ It records the repo's check commands in `CLAUDE.md`, creates the feature map in 
 or just ask for a feature in plain words. The agent then:
 
 ```
-understand ─ goal ─ plan ─ build slice by slice ─ verify ─ review ─ map ─ PR ─ merge gate
-   map +      red     ≤10      test, code, check,    full     fresh    update   evidence   auto-merge
-   scout     checks   lines    commit                check    eyes              + risk     if low risk
+understand ─ goal ─ plan ─ build slice by slice ─ verify ─ review + grade ─ map ─ PR ─ merge gate
+   map +      red     ≤10      test, code, check,    full +   fresh eyes,     update  evidence   auto-merge
+   scout     checks   lines    commit                mutants  1-100 score             + risk     if low risk
 ```
 
 It asks you something only when a decision is a one-way door or the request has two readings that lead to different products.
 
 ## What is in it
 
-**Always on** (`hooks/core.md`, about 340 words, injected at session start): nine rules covering goal before code, one change per check, never weakening a check, comments, tending the codebase, deferring with issues, guarding context, encoding lessons, and factual reports.
+**Always on** (`hooks/core.md`, about 350 words, injected at session start): nine rules covering goal before code, one change per check, never weakening a check, comments, tending the codebase, deferring with issues, guarding context, encoding lessons, and factual reports.
 
 **Skills**, loaded only when needed:
 
@@ -48,7 +48,8 @@ It asks you something only when a decision is a one-way door or the request has 
 | `goal` | The goal contract: commands that decide whether the task is done. Includes the hillclimb loop for metrics |
 | `map` | The feature map in `docs/map/`: what the product does, where each feature lives, how to verify it |
 | `garden` | Module shape, pruning and the comment policy, with stack files for TypeScript/React/Next.js and Rust/Go |
-| `design` | Frontend workflow: study references, commit to a direction, build on tokens, verify the render. With a craft floor, motion values and a reference list |
+| `design` | Frontend workflow: study references, commit to a direction that departs from the default, build on tokens, write the copy, scan for tells, verify the render, grade it. With a craft floor, a catalog of generated-UI tells, copy rules, motion values and a reference list |
+| `grade` | A 1 to 100 score from a fresh-context grader against a fixed rubric, for code, rendered UI and copy. Baseline before, score after, a bounded fix loop and a ledger |
 | `prove` | Lean 4: model the algorithm, prove the property, tie the proof to the real code with property-based tests |
 | `pr` | PR body with a visual summary, before-and-after evidence and merge danger, plus the auto-merge gate |
 | `defer` | Open a GitHub issue for anything out of scope |
@@ -61,7 +62,8 @@ It asks you something only when a decision is a one-way door or the request has 
 | `scout` | Haiku | Find code and report locations, not contents |
 | `verifier` | Haiku | Group and trim a long failing check |
 | `design-scout` | Haiku | Measure reference sites |
-| `reviewer` | Sonnet | Review the diff with fresh context before the PR |
+| `reviewer` | Sonnet | Review the diff with fresh context before the PR and grade it: correct, proven, simple, fits |
+| `critic` | Sonnet | Judge the rendered UI from screenshots alone and grade it: works, clear, decided, finished, copy |
 
 **Quiet runner** (`bin/ult-run`, `bin/ult-run.ps1`): wraps any check command. Success prints one line; failure prints the last 40 lines; the full log goes to `.ult/logs/`. Most check runs cost a few tokens and need no subagent.
 
@@ -89,6 +91,10 @@ For repos you work on from both systems, `/ult:setup` records check commands tha
 
 **Context is the budget.** The always-loaded cost is about 1,000 tokens (core rules plus skill and agent descriptions). Everything else is behind a pointer: a skill body loads when its task comes up, and a reference file loads only when the skill's step calls for it. Check output goes through the quiet runner and exploration goes to a Haiku subagent that returns a few lines. The feature map means most tasks begin with a 60-line read instead of a search.
 
+**A grade is an anchor, and the author never holds the pen.** Checks say whether the work does the job; a grade says how well, as a number comparable with the last one. A model asked to score its own work says 90, so the score comes from a subagent that sees only the result, never the previous score or the intent. Each grader lists findings first and derives the dimension scores from them: a dimension goes under 90 only with a finding that explains it, a blocker caps it at 59. The bar is 80 with no dimension under 60, the fix loop stops after two regrades, and a move under 4 points counts as noise. Whatever a command can measure stays measured: metrics go through the hillclimb harness, and test strength is checked by breaking the finished code on purpose and counting the mutants the checks catch.
+
+**Generated UI is a default, so the fix is a decision.** A ban list alone moves the model to the next most common choice. The design skill therefore asks for three candidate directions and treats the first as the one everybody gets, requires three named departures from the default with a reason each, and pairs every tell in `SLOP.md` with what to do instead. Copy gets the same treatment in `COPY.md`: four tests (swap, proof, spoken, delete) before a list of words. The part a regex can catch (gradient text, dead links, placeholder names, stock phrases, emoji icons) is in `tells.txt` and is found by `rg` at no model cost. The rest is judged by the critic from screenshots.
+
 **Comments are a symptom.** A comment that explains a workaround is where the code should have been fixed. The policy allows three kinds (public API contract, linked external constraint, license), the reviewer audits every added comment, and the commit guard catches the markers.
 
 **The codebase is a garden.** Smallest diff, delete before adding, deep modules, three uses before an abstraction, migrate then delete. Mess outside the task becomes an issue, so diffs stay reviewable and nothing is forgotten.
@@ -99,14 +105,16 @@ For repos you work on from both systems, `/ult:setup` records check commands tha
 
 **Lessons become structure.** A correction or a repeated mistake is turned into a test, a type, a lint rule or a map gotcha, so the next session cannot repeat it and no context is spent remembering it.
 
-**Few parts.** Ten skills and four agents. A rule is in the stack only if an agent does worse without it.
+**Few parts.** Eleven skills and five agents. A rule is in the stack only if an agent does worse without it.
 
 ## Changing it
 
-Edit the files and run `bash scripts/check.sh`. It validates the manifests, enforces the size budgets in `CLAUDE.md`, checks links and tests the hooks and the runner in bash and, when `pwsh` or `powershell` is installed, in PowerShell. CI runs it on Ubuntu and Windows. Tune first:
+Edit the files and run `bash scripts/check.sh`. It validates the manifests, enforces the size budgets in `CLAUDE.md`, checks links, tests the tells file against sample markup, keeps the two graders on one scale and tests the hooks and the runner in bash and, when `pwsh` or `powershell` is installed, in PowerShell. CI runs it on Ubuntu and Windows. Tune first:
 
 - `skills/pr/SKILL.md`, section "Merge gate": what may merge without you.
 - `skills/design/REFERENCES.md`: the sites you consider the best.
+- `skills/design/SLOP.md`, `COPY.md` and `tells.txt`: what you count as a tell. Add one whenever you spot a new giveaway.
+- `skills/grade/SKILL.md`, section "Loop": the bar. The rubrics are in `agents/reviewer.md` and `agents/critic.md`.
 - `skills/garden/TS.md` and `SYSTEMS.md`: your stack conventions.
 - `hooks/core.md`: the always-on rules. Keep it under 350 words.
 

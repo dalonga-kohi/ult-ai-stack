@@ -37,6 +37,7 @@ Title: Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `test`, `docs`, 
 
 - **Before:** <failing test, output or screenshot>
 - **After:** <passing test, output or screenshot>
+- **Grade:** <the lines from `ult:grade`, with the baseline when there is one>
 
 ## Merge danger
 
@@ -72,7 +73,7 @@ Enable auto-merge only when **all** of these hold:
 - The diff stays inside one feature area, and is docs, tests, an internal refactor with unchanged behavior, or a small contained fix or feature.
 - It touches none of: authentication or authorization, payments or billing, database schema or migrations, public API or exported types of a published package, dependency manifests or lockfiles, CI, infrastructure or deploy configuration, secrets or environment handling.
 - The repo has CI checks on pull requests, and the goal contract's checks are covered by them or passed locally with output in the PR.
-- The reviewer agent returned no BLOCKER.
+- The reviewer agent returned no BLOCKER, and every grade meets the bar in `ult:grade`.
 
 Then:
 

@@ -35,15 +35,15 @@ You own the outcome from request to PR. Do not stop to ask for approval between 
    - Commit the slice. Conventional Commits title, body only when the reason is not obvious from the diff. Tick it in `.ult/task.md`.
    - A problem outside the goal goes to `ult:defer`, not into the diff.
 
-6. **Verify.** Run the `full` check through the quiet runner. If it fails with more failures than the tail shows, hand the log path to `ult:verifier` for a grouped summary. Then run every check in the goal contract and keep the output. For user-visible behavior, drive the real app (CLI, HTTP call or browser) and capture what you saw. "It compiles" and "tests pass" are not evidence that the feature works.
+6. **Verify.** Run the `full` check through the quiet runner. If it fails with more failures than the tail shows, hand the log path to `ult:verifier` for a grouped summary. Then run every check in the goal contract and keep the output. For user-visible behavior, drive the real app (CLI, HTTP call or browser) and capture what you saw. "It compiles" and "tests pass" are not evidence that the feature works. Last, prove the checks bite with the mutant step of `ult:goal`.
 
-7. **Review.** Spawn `ult:reviewer` with the base branch and the goal contract. Fix every BLOCKER and every SHOULD you agree with; say in one line why you rejected any other. Run a second review only if the first found a BLOCKER. Rerun the checks after fixes.
+7. **Review and grade.** Spawn `ult:reviewer` with the base branch, the goal contract and the mutant count. It returns findings and a 1 to 100 grade. Fix every BLOCKER, then run the loop in `ult:grade` to the bar. Rerun the checks after fixes. UI work was graded in `ult:design`; do not grade it twice.
 
 8. **Map.** If behavior, entry points or verification commands changed, update `docs/map/` in this branch with the `ult:map` skill.
 
 9. **PR.** Open it with the `ult:pr` skill and apply its merge gate.
 
-10. **Report and close.** Delete `.ult/task.md`. At most 8 lines: what shipped, the PR link, merged or waiting and why, check results, issues opened, lessons encoded.
+10. **Report and close.** Delete `.ult/task.md`. At most 8 lines: what shipped, the PR link, merged or waiting and why, check results, grades, issues opened, lessons encoded.
 
 ## Stop and ask only when
 
