@@ -28,10 +28,20 @@ It records the repo's check commands in `CLAUDE.md`, creates the feature map in 
 or just ask for a feature in plain words. The agent then:
 
 ```
-understand ─ goal ─ plan ─ build slice by slice ─ verify ─ review + grade ─ map ─ PR ─ merge gate
-   map +      red     ≤10      test, code, check,    full +   fresh eyes,     update  evidence   auto-merge
-   scout     checks   lines    commit                mutants  1-100 score             + risk     if low risk
+understand ─ goal ─ plan ─ build slice by slice ─ verify ─ self-read ─ review + grade ─ map ─ PR ─ merge gate
+   map +      red    shortest  test, code, second    full +   own diff   one review,     update evidence  auto-merge
+   scout     checks  path      draft, check, commit  mutants  first      one recheck            + risk    if low risk
 ```
+
+Work too big for one pull request is not built in one go. The agent splits it into parts, ships the first, and ends its report with the next steps:
+
+```
+Next:
+- CSV export for the filtered view: `/ult:ship add the active filters to the invoice CSV export built in #41 ...`
+- Scheduled export by email
+```
+
+The split is told to you, not written to a file: you decide when and whether each later part starts. `/ult:next` tells you where the current work stands at any time.
 
 It asks you something only when a decision is a one-way door or the request has two readings that lead to different products.
 
@@ -44,12 +54,15 @@ It asks you something only when a decision is a one-way door or the request has 
 | Skill | Purpose |
 | --- | --- |
 | `ship` | The end-to-end workflow above |
+| `plan` | The shortest path to the goal: reuse, cut, choose a route, slice by risk. Sizes the work and splits anything too big for one pull request |
+| `next` | Where the work stands and the one thing to do next, with the command to paste |
+| `brief` | Write the prompt for another agent, or turn a rough request into one: goal, context, done-check, limits, reply shape |
 | `debug` | Reproduce, shrink, locate by halving, fix at the origin, pin with a regression test |
 | `goal` | The goal contract: commands that decide whether the task is done. Includes the hillclimb loop for metrics |
 | `map` | The feature map in `docs/map/`: what the product does, where each feature lives, how to verify it |
-| `garden` | Module shape, pruning and the comment policy, with stack files for TypeScript/React/Next.js and Rust/Go |
+| `garden` | Module shape, pruning, what makes a module easy to replace, the second-draft pass and the comment policy, with stack files for TypeScript/React/Next.js and Rust/Go |
 | `design` | Frontend workflow: study references, commit to a direction that departs from the default, build on tokens, write the copy, scan for tells, verify the render, grade it. With a craft floor, a catalog of generated-UI tells, copy rules, motion values and a reference list |
-| `grade` | A 1 to 100 score from a fresh-context grader against a fixed rubric, for code, rendered UI and copy. Baseline before, score after, a bounded fix loop and a ledger |
+| `grade` | A 1 to 100 score from a fresh-context grader against a fixed rubric, for code, rendered UI and copy. Baseline before, score after, a bounded loop (for code: one review and one recheck), a score ledger and a findings ledger that feeds the next task |
 | `prove` | Lean 4: model the algorithm, prove the property, tie the proof to the real code with property-based tests |
 | `pr` | PR body with a visual summary, before-and-after evidence and merge danger, plus the auto-merge gate |
 | `defer` | Open a GitHub issue for anything out of scope |
@@ -62,7 +75,7 @@ It asks you something only when a decision is a one-way door or the request has 
 | `scout` | Haiku | Find code and report locations, not contents |
 | `verifier` | Haiku | Group and trim a long failing check |
 | `design-scout` | Haiku | Measure reference sites |
-| `reviewer` | Sonnet | Review the diff with fresh context before the PR and grade it: correct, proven, simple, fits |
+| `reviewer` | Sonnet | Read the diff until it can explain it, report only defects it can demonstrate, and grade it: correct, proven, simple, fits. A clean result is normal. Rechecks its own findings after the fixes |
 | `critic` | Sonnet | Judge the rendered UI from screenshots alone and grade it: works, clear, decided, finished, copy |
 
 **Quiet runner** (`bin/ult-run`, `bin/ult-run.ps1`): wraps any check command. Success prints one line; failure prints the last 40 lines; the full log goes to `.ult/logs/`. Most check runs cost a few tokens and need no subagent.
@@ -91,7 +104,15 @@ For repos you work on from both systems, `/ult:setup` records check commands tha
 
 **Context is the budget.** The always-loaded cost is about 1,000 tokens (core rules plus skill and agent descriptions). Everything else is behind a pointer: a skill body loads when its task comes up, and a reference file loads only when the skill's step calls for it. Check output goes through the quiet runner and exploration goes to a Haiku subagent that returns a few lines. The feature map means most tasks begin with a 60-line read instead of a search.
 
-**A grade is an anchor, and the author never holds the pen.** Checks say whether the work does the job; a grade says how well, as a number comparable with the last one. A model asked to score its own work says 90, so the score comes from a subagent that sees only the result, never the previous score or the intent. Each grader lists findings first and derives the dimension scores from them: a dimension goes under 90 only with a finding that explains it, a blocker caps it at 59. The bar is 80 with no dimension under 60, the fix loop stops after two regrades, and a move under 4 points counts as noise. Whatever a command can measure stays measured: metrics go through the hillclimb harness, and test strength is checked by breaking the finished code on purpose and counting the mutants the checks catch.
+**A grade is an anchor, and the author never holds the pen.** Checks say whether the work does the job; a grade says how well, as a number comparable with the last one. A model asked to score its own work says 90, so the score comes from a subagent that sees only the result, never the previous score or the intent. Each grader lists findings first and derives the dimension scores from them: a dimension drops only with a finding that explains it, a blocker caps it at 59. The bar is 80 with no dimension under 60, every loop is bounded, and a move under 4 points counts as noise. Whatever a command can measure stays measured: metrics go through the hillclimb harness, and test strength is checked by breaking the finished code on purpose and counting the mutants the checks catch.
+
+**A reviewer told to find problems always finds some.** Ask a fresh model for defects and it returns defects, real or not, and a new reviewer after every fix means the loop never ends. So the reviewer's job is stated as understanding: it reads the goal, the diff and the callers until it can explain the change, writes that down, and walks the behavior with real values. A finding is admitted only with a concrete scenario, in code this change touched, after an attempt to refute it; taste and hypothetical futures are excluded by name. `CLEAN` is described as the expected result. A suspicion it cannot demonstrate goes out as a `RISK` with the one check that would settle it, and never lowers the score. Scores start at 95 and only a listed finding lowers them, so there is no pressure to produce a finding to justify a number. The loop is one review and one recheck, and the recheck reads only the fixes.
+
+**Review findings feed back.** Every finding is logged to `.ult/findings.tsv` with a kind and whether it was fixed or rejected. The author reads the recent ones before reading its own diff, so it looks for the mistakes it actually makes here. A kind fixed three times becomes a test, a type or a lint rule. A kind rejected three times for the same reason becomes one line of stated convention that the reviewer reads, so the same false finding stops coming back.
+
+**Quality is built before the review.** The plan step removes work before any is done: reuse what exists, strike what the outcome does not need, choose the route with the fewest new concepts. Each slice gets a second-draft pass while its check is green, because the first version that passes was written before the answer was known. The author reads the whole diff once as a stranger before the reviewer sees it. Modular code is defined by what a module hides, so it can be replaced without adding layers.
+
+**Big work is split.** One oversized change is reviewed badly, verified badly and reverted whole. `ult:plan` has four size tests; past any of them the agent ships only the first part and hands back short next steps, each later part with a prompt that stands alone.
 
 **Generated UI is a default, so the fix is a decision.** A ban list alone moves the model to the next most common choice. The design skill therefore asks for three candidate directions and treats the first as the one everybody gets, requires three named departures from the default with a reason each, and pairs every tell in `SLOP.md` with what to do instead. Copy gets the same treatment in `COPY.md`: four tests (swap, proof, spoken, delete) before a list of words. The part a regex can catch (gradient text, dead links, placeholder names, stock phrases, emoji icons) is in `tells.txt` and is found by `rg` at no model cost. The rest is judged by the critic from screenshots.
 
@@ -105,7 +126,7 @@ For repos you work on from both systems, `/ult:setup` records check commands tha
 
 **Lessons become structure.** A correction or a repeated mistake is turned into a test, a type, a lint rule or a map gotcha, so the next session cannot repeat it and no context is spent remembering it.
 
-**Few parts.** Eleven skills and five agents. A rule is in the stack only if an agent does worse without it.
+**Few parts.** Fourteen skills and five agents. A rule is in the stack only if an agent does worse without it.
 
 ## Changing it
 
@@ -114,6 +135,8 @@ Edit the files and run `bash scripts/check.sh`. It validates the manifests, enfo
 - `skills/pr/SKILL.md`, section "Merge gate": what may merge without you.
 - `skills/design/REFERENCES.md`: the sites you consider the best.
 - `skills/design/SLOP.md`, `COPY.md` and `tells.txt`: what you count as a tell. Add one whenever you spot a new giveaway.
+- `skills/plan/SKILL.md`, step "Size": when work counts as too big for one pull request.
+- `agents/reviewer.md`, section "Admit a finding only when": how strict the reviewer is.
 - `skills/grade/SKILL.md`, section "Loop": the bar. The rubrics are in `agents/reviewer.md` and `agents/critic.md`.
 - `skills/garden/TS.md` and `SYSTEMS.md`: your stack conventions.
 - `hooks/core.md`: the always-on rules. Keep it under 350 words.

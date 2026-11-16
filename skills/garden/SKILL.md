@@ -26,6 +26,19 @@ Stack rules: [TS.md](TS.md) for TypeScript, React and Next.js. [SYSTEMS.md](SYST
 - **Fix the cause.** A guard added where the symptom shows leaves the bug alive. Follow the bad value to where it was made and fix it there.
 - **Stay in your bed.** Touch only what the goal needs. Mess you notice elsewhere goes to `ult:defer`.
 
+## Easy to replace
+
+Modular means a part can be swapped without its callers noticing. That comes from what a module hides, never from extra layers.
+
+- **Nothing from behind the interface crosses it.** No ORM row, SDK response or vendor error in a signature. Translate at the edge, and replacing the dependency changes one module.
+- **One place builds it.** Construct the module in one spot and pass it in. Callers that build their own copy each have to change on a swap.
+- **Tests at the interface are the replacement contract.** A rewrite is finished when the same tests pass unchanged. A test that reaches inside pins the implementation and blocks the swap.
+- **General by subtraction.** A module becomes reusable by knowing less about its callers: plain data in and out, fewer assumptions. Never by adding options for callers that do not exist.
+
+## Second draft
+
+The first version that passes is a draft, written before you knew the answer. With the check green and before the commit, reread the slice and ask what the simplest version looks like now: a branch ladder that is a table, a parameter every caller passes the same, two functions that are one, a name that makes a condition obvious. Make the change if the result is smaller or clearer, and keep the check green. One pass, then commit.
+
 ## Comments
 
 The default is no comment. Code says what; names say why. Before writing one, try in order: a better name, an extracted function with that name, a type that carries the constraint, a test that pins the behavior.

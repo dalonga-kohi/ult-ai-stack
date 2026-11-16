@@ -51,6 +51,10 @@ fi
 scale() { grep -E '^(90-100|75-89|60-74|40-59|0-39) ' "$1"; }
 [ "$(scale agents/reviewer.md | wc -l)" -eq 5 ] || err "agents/reviewer.md: the grading scale needs 5 bands"
 [ "$(scale agents/reviewer.md)" = "$(scale agents/critic.md)" ] || err "agents/reviewer.md and agents/critic.md: the grading scale differs"
+rubric=$(grep -oE 'GRADE code/[0-9]+' agents/reviewer.md | sort -u)
+[ "$(printf '%s\n' "$rubric" | wc -l)" -eq 1 ] || err "agents/reviewer.md: more than one code rubric version"
+grep -q "${rubric#GRADE }" skills/grade/SKILL.md || err "skills/grade/SKILL.md does not name the reviewer's rubric ${rubric#GRADE }"
+grep -q '^CLEAN' <(grep -oE 'CLEAN: <[^>]*>' agents/reviewer.md) || err "agents/reviewer.md: the reply shape lost its CLEAN form"
 
 tells_cases() {
   local tells=skills/design/tells.txt tmp hits

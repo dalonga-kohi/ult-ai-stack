@@ -8,7 +8,7 @@ A Claude Code plugin (`ult`): skills, subagents and hooks. No build step. Design
 - `skills/<name>/SKILL.md`: loaded on demand. Sibling `.md` files are loaded only when the skill points to them.
 - `skills/design/tells.txt`: one regex per line for `rg -i -f`, the mechanical subset of `SLOP.md` and `COPY.md`. No blank lines (a blank pattern matches everything) and only high-precision patterns: a noisy scan gets ignored.
 - `bin/ult-run` and `bin/ult-run.ps1`: the quiet check runner. One line on success, the tail on failure, full log in `.ult/logs/`.
-- `agents/<name>.md`: subagents. `scout`, `verifier` and `design-scout` run on Haiku; `reviewer` and `critic` on Sonnet. The two graders share one scale block, kept identical by `scripts/check.sh`; bump the rubric version (`code/1`, `ui/1`) when a dimension or the scale changes, because scores do not compare across versions.
+- `agents/<name>.md`: subagents. `scout`, `verifier` and `design-scout` run on Haiku; `reviewer` and `critic` on Sonnet. The two graders share one scale block, kept identical by `scripts/check.sh`; bump the rubric version (`code/2`, `ui/1`) when a dimension or the scale changes, because scores do not compare across versions.
 
 ## Writing rules for this repo
 
