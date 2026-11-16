@@ -1,0 +1,8 @@
+{
+  "name": "ult",
+  "version": "0.1.0",
+  "description": "Feature to merged PR with verifiable goals, a tended codebase and a small context footprint.",
+  "author": { "name": "Sebastian Krzyzak" },
+  "repository": "https://github.com/dalonga-kohi/ult-ai-stack",
+  "license": "MIT"
+}

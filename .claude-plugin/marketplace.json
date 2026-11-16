@@ -1,0 +1,13 @@
+{
+  "name": "ult-ai-stack",
+  "description": "ult: an agent workflow stack for Claude Code",
+  "owner": { "name": "Sebastian Krzyzak" },
+  "plugins": [
+    {
+      "name": "ult",
+      "description": "Feature to merged PR with verifiable goals, a tended codebase and a small context footprint.",
+      "version": "0.1.0",
+      "source": "./"
+    }
+  ]
+}

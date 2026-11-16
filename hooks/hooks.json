@@ -1,0 +1,27 @@
+{
+  "description": "ult: inject the core rules at session start, block commits that add deferral markers or suppressions",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/commit-guard.sh\"",
+            "if": "Bash(git commit:*)"
+          }
+        ]
+      }
+    ]
+  }
+}
