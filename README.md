@@ -9,7 +9,7 @@ A Claude Code plugin that takes a request ("implement this feature") to a pull r
 /plugin install ult@ult-ai-stack
 ```
 
-Requirements: `git`, the GitHub CLI (`gh auth login`), and Lean 4 through `elan` if you want `ult:prove`.
+Requirements: `git`, the GitHub CLI (`gh auth login`), and Lean 4 through `elan` if you want `ult:prove`. Works on Linux, macOS and Windows; see [Windows](#windows).
 
 Then, once in each repository:
 
@@ -63,11 +63,25 @@ It asks you something only when a decision is a one-way door or the request has 
 | `design-scout` | Haiku | Measure reference sites |
 | `reviewer` | Sonnet | Review the diff with fresh context before the PR |
 
-**Quiet runner** (`bin/ult-run`): wraps any check command. Success prints one line; failure prints the last 40 lines; the full log goes to `.ult/logs/`. Most check runs cost a few tokens and need no subagent.
+**Quiet runner** (`bin/ult-run`, `bin/ult-run.ps1`): wraps any check command. Success prints one line; failure prints the last 40 lines; the full log goes to `.ult/logs/`. Most check runs cost a few tokens and need no subagent.
 
 **Task file** (`.ult/task.md`): `ship` writes the goal contract and the slice checklist here and ticks slices as they land. After context compaction or in a new session, the session-start hook points the agent back to it, so a long task resumes where it stopped.
 
-**Hook**: `commit-guard.sh` blocks a `git commit` that adds deferral markers or lint and type suppressions to code, unless the line references an issue number, and blocks `--no-verify`. The rule is enforced by a script, so it costs no context and cannot be argued with.
+**Hook**: the commit guard (`commit-guard.sh`, `commit-guard.ps1`) blocks a `git commit` that adds deferral markers or lint and type suppressions to code, unless the line references an issue number, and blocks `--no-verify`. The rule is enforced by a script, so it costs no context and cannot be argued with.
+
+## Windows
+
+Every script has a bash version and a PowerShell version with the same behavior, and Claude Code picks between them:
+
+| Setup | Hooks run | Quiet runner |
+| --- | --- | --- |
+| Linux, macOS | `.sh` through `sh` | `bin/ult-run` |
+| Windows with Git for Windows (Git Bash) | `.sh` through Git Bash | `bin/ult-run` |
+| Windows without Git Bash | `.ps1` through PowerShell | `bin/ult-run.ps1` |
+
+The commit guard watches `git commit` in both the Bash tool and the PowerShell tool. The PowerShell scripts run on Windows PowerShell 5.1 and PowerShell 7 and are started with `-ExecutionPolicy Bypass`, so no policy change is needed. `.gitattributes` keeps line endings at LF so the bash scripts survive a Windows checkout. Skills use only commands that are the same in both shells (`git`, `gh`, `rg`, `lake`).
+
+For repos you work on from both systems, `/ult:setup` records check commands that run unchanged in both shells (a package script or task runner target, not an `&&` chain).
 
 ## Why it is built this way
 
@@ -89,7 +103,7 @@ It asks you something only when a decision is a one-way door or the request has 
 
 ## Changing it
 
-Edit the files and run `bash scripts/check.sh`. It validates the manifests, enforces the size budgets in `CLAUDE.md`, checks links and tests the commit guard. Tune first:
+Edit the files and run `bash scripts/check.sh`. It validates the manifests, enforces the size budgets in `CLAUDE.md`, checks links and tests the hooks and the runner in bash and, when `pwsh` or `powershell` is installed, in PowerShell. CI runs it on Ubuntu and Windows. Tune first:
 
 - `skills/pr/SKILL.md`, section "Merge gate": what may merge without you.
 - `skills/design/REFERENCES.md`: the sites you consider the best.

@@ -14,6 +14,8 @@ Run once per repository. Each step ends in something you can observe. Report at 
    - `fast`: typecheck, lint and the quick tests. It should finish in under a minute and print little on success.
    - `full`: everything CI runs, including the complete test suite and the build.
 
+   Record a command that runs unchanged in bash and PowerShell: a package script or task runner target (`npm run check`, `cargo test`, `just check`), not a pipeline or an `&&` chain. If only a chain exists, add the script.
+
    Prefer quiet flags so success is a few lines (`--silent`, `--reporter=dot`, `-q`, `--quiet`). If the repo has no tests or no linter, do not add one silently: record what exists and open an issue with `ult:defer` for what is missing.
 
 3. **Record them** in the repo's `CLAUDE.md` (create it if absent; keep everything else in it unchanged):

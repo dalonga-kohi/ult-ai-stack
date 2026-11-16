@@ -1,7 +1,7 @@
 ---
 name: scout
 description: Read-only codebase explorer. Use for broad searches where the caller needs the conclusion and file locations, not the file contents: "where is X handled", "what calls Y", "how does feature Z flow".
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 model: haiku
 ---
 

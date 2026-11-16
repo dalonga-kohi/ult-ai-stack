@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\""
+            "command": "echo `# <#` >/dev/null; bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"; exit $? #> | Out-Null; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.ps1\"; exit $LASTEXITCODE"
           }
         ]
       }
@@ -17,8 +17,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/commit-guard.sh\"",
-            "if": "Bash(git commit:*)"
+            "command": "echo `# <#` >/dev/null; bash \"${CLAUDE_PLUGIN_ROOT}/hooks/commit-guard.sh\"; exit $? #> | Out-Null; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/hooks/commit-guard.ps1\"; exit $LASTEXITCODE",
+            "if": "Bash(git commit *)"
+          }
+        ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo `# <#` >/dev/null; bash \"${CLAUDE_PLUGIN_ROOT}/hooks/commit-guard.sh\"; exit $? #> | Out-Null; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/hooks/commit-guard.ps1\"; exit $LASTEXITCODE",
+            "if": "PowerShell(git commit *)"
           }
         ]
       }

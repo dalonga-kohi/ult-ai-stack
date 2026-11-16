@@ -13,7 +13,7 @@ diff=$(git diff --cached -U0 --no-color -- . ':(exclude)*.md' 2>/dev/null)
 [ -z "$diff" ] && exit 0
 
 markers='(^|[^A-Za-z])(TO''DO|FIX''ME|HA''CK|X''XX)([^A-Za-z]|$)'
-suppressions='@ts-ig''nore|@ts-expect-er''ror|@ts-noch''eck|eslint-dis''able|#\[al''low\(|//[[:space:]]*nol''int|type:[[:space:]]*ig''nore|#[[:space:]]*no''qa'
+suppressions='@ts-ig''nore|@ts-expect-er''ror|@ts-noch''eck|eslint-dis''able|#[[]al''low[(]|//[[:space:]]*nol''int|type:[[:space:]]*ig''nore|#[[:space:]]*no''qa'
 
 hits=$(printf '%s\n' "$diff" | awk -v pat="$markers|$suppressions" '
   /^\+\+\+ / { file = substr($0, 7); next }

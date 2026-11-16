@@ -1,7 +1,7 @@
 ---
 name: verifier
 description: Summarizes a long failing check. Given commands or a log path, returns pass or fail with failures grouped and trimmed. Use when a check fails with more output than the quiet runner's tail shows.
-tools: Bash, Read
+tools: Bash, PowerShell, Read
 model: haiku
 ---
 

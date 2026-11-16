@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Fresh-eyes review of a diff before a PR opens. Finds correctness bugs, unjustified comments, weakened checks and needless complexity. Reports findings and edits nothing.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, PowerShell
 model: sonnet
 ---
 

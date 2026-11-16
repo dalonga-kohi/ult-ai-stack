@@ -1,0 +1,23 @@
+name: check
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, ps: pwsh }
+          - { os: windows-latest, ps: pwsh }
+          - { os: windows-latest, ps: powershell }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/check.sh
+        shell: bash
+        env:
+          ULT_PS: ${{ matrix.ps }}
+          ULT_REQUIRE_PS: "1"

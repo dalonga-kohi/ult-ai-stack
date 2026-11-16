@@ -8,10 +8,9 @@ description: Open a GitHub issue for a problem that is real but outside the curr
 A deferred problem lives in the tracker, where it can be found, ranked and closed. It never lives in a code comment or only in your reply.
 
 1. Check it is not already filed: `gh issue list --search "<two or three keywords>" --state open`.
-2. File it:
+2. Write the body to `.ult/issue.md` with the Write tool (a file works in every shell; quoting a long body inline does not):
 
-```bash
-gh issue create --title "<area>: <the problem, stated as a fact>" --body "$(cat <<'EOF'
+```markdown
 ## What
 <One or two sentences. What is wrong or missing.>
 
@@ -28,12 +27,12 @@ gh issue create --title "<area>: <the problem, stated as a fact>" --body "$(cat 
 <One or two lines if you have a concrete idea. Omit if not.>
 
 Found while working on <branch or PR>.
-EOF
-)"
 ```
 
-3. Add a label only if the repo already uses it (`gh label list`).
-4. Go back to the task. Mention the issue number in your final report and in the PR if it relates.
+3. File it: `gh issue create --title "<area>: <the problem, stated as a fact>" --body-file .ult/issue.md`
+
+4. Add a label only if the repo already uses it (`gh label list`).
+5. Go back to the task. Mention the issue number in your final report and in the PR if it relates.
 
 ## File an issue for
 

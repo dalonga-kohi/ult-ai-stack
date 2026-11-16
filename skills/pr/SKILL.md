@@ -15,12 +15,11 @@ The body is a one-minute briefing for a reviewer who has the diff. Template adap
 
 ## Open it
 
-```bash
+Write the body below to `.ult/pr.md` with the Write tool, then:
+
+```
 git push -u origin HEAD
-gh pr create --title "<type>(<scope>): <imperative subject>" --body "$(cat <<'EOF'
-<body>
-EOF
-)"
+gh pr create --title "<type>(<scope>): <imperative subject>" --body-file .ult/pr.md
 ```
 
 Title: Conventional Commits (`feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `chore`), no trailing period.
