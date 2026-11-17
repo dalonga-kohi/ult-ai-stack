@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Find the shortest path from the current code to a goal before building. Reuse, cut, choose a route, slice vertically, and split work too big for one pull request. Use before any non-trivial implementation, or alone to plan without coding.
+description: Find the shortest path from the current code to a goal before building. Reuse, cut, choose a route, slice vertically, and send work too big for one pull request to ult:grill-me. Use before any non-trivial implementation, or alone to plan without coding.
 argument-hint: <what to plan>
 ---
 
@@ -29,21 +29,9 @@ A plan is the shortest sequence of verified steps from the code as it is to the 
    - it touches more than 2 feature areas of the map;
    - it will change more than about 400 lines, tests excluded.
 
-## Large work is split, never built in one go
+## Large work goes to issues, never into one go
 
-This holds even when the request says to do all of it. One oversized change is reviewed badly, verified badly and reverted whole.
-
-1. Split into parts. Each part is one pull request that leaves the default branch working and delivers something observable alone. Part 1 is the smallest part that proves the route.
-2. Plan slices for part 1 only. Later parts are planned when they start, with what part 1 taught.
-3. Tell the user the split; write it to no file. The parts go at the end of your reply:
-
-   ```
-   Next:
-   - <part 2 in a few words>: `/ult:ship <a request that stands alone>`
-   - <part 3 in a few words>
-   ```
-
-   At most 5 bullets. Only the next part carries a command, and that command must make sense to an agent that has never seen this conversation: name the files, the decisions already made and the pull request it builds on.
+This holds even when the request says to do all of it. One oversized change is reviewed badly, verified badly and reverted whole, and the session that builds it runs out of context before the end. Stop planning. The work goes through `ult:grill-me`, which settles the open decisions with the user and files each part as a sub-issue that fits one fresh session.
 
 ## Write the plan
 
@@ -55,12 +43,12 @@ Route: <chosen> over <rejected>: <reason>          (only when there was a choice
 Slices:
 1. <slice> -> `<check that passes>`
 2. <...>
-Size: <Small | Standard | Large: part 1 of N>
-Later: <struck items worth keeping, and the parts after this one>
+Size: <Small | Standard>
+Later: <struck items worth keeping>
 ```
 
 At most 16 lines. A plan that needs more is hiding a second feature: return to step 6.
 
 ## On request
 
-`/ult:plan <what>`: produce the plan, with the `Next` list when the work is Large. Change no code. End with the `/ult:ship` command that starts it.
+`/ult:plan <what>`: produce the plan and change no code. End with the `/ult:ship` command that starts it. When the work is Large, write no plan: say which size test it fails and give `/ult:grill-me <what>` instead.

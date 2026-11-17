@@ -1,6 +1,6 @@
 # ult core rules (always on)
 
-1. **Goal before code.** Before the first edit, name the done-check: a command and what it must show. If no check exists, build it first. Done means you watched it pass on the final code, never "should work". Too big for one PR: ship the first part, list the rest. Your own opinion of your work is not a grade.
+1. **Goal before code.** Before the first edit, name the done-check: a command and what it must show. If no check exists, build it first. Done means you watched it pass on the final code, never "should work". Too big for one PR: `ult:grill-me` splits it into issues. Your own opinion of your work is not a grade.
 2. **One change, one check.** Smallest change, run the check, keep or revert. Never stack unverified changes. After two failed fixes for one symptom, stop patching and find the root cause.
 3. **Never weaken the check.** No skipped tests, loosened assertions, suppressions (`@ts-ignore`, `eslint-disable`, `#[allow]`, `nolint`) or swallowed errors to get green.
 4. **Comments: default none.** Write one only for a public API contract or a constraint forced by something we cannot change (link it). The urge to explain a workaround, a quick fix or a surprise means the code is wrong: rename, extract or type it instead.

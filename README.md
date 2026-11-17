@@ -33,15 +33,21 @@ understand ─ goal ─ plan ─ build slice by slice ─ verify ─ self-read �
    scout     checks  path      draft, check, commit  mutants  first      one recheck            + risk    if low risk
 ```
 
-Work too big for one pull request is not built in one go. The agent splits it into parts, ships the first, and ends its report with the next steps:
+Work too big for one pull request is not built in one go. Start it with an interview instead:
 
 ```
-Next:
-- CSV export for the filtered view: `/ult:ship add the active filters to the invoice CSV export built in #41 ...`
-- Scheduled export by email
+/ult:grill-me add PDF export
 ```
 
-The split is told to you, not written to a file: you decide when and whether each later part starts. `/ult:next` tells you where the current work stands at any time.
+The agent questions you one decision at a time, gives its recommended answer with each question, and reads the code instead of asking whenever the code can answer. It pins down vague terms and points out where an answer contradicts the code or an earlier answer. Once every branch is decided, it splits the work into parts, each sized for one fresh session, and files them on GitHub as a parent issue labeled `epic` with one sub-issue per part. Every sub-issue holds the decisions it depends on, its done-check and what it builds on, so an agent that never saw the interview can do it:
+
+```
+Epic: #40 invoices: PDF export
+Parts: #41 single invoice to PDF | #42 batch export (after #41) | #43 branding
+Start: in a new session (/clear), `/ult:ship #41`
+```
+
+Then do the parts one by one, each in a clean session: `/ult:ship #41` reads the issue, writes its goal from `Done when`, and opens a PR that closes it. `/ult:next` names the next open part whose blockers are closed. If `ult:ship` gets a request that turns out to be Large, it builds nothing and starts the interview.
 
 It asks you something only when a decision is a one-way door or the request has two readings that lead to different products.
 
@@ -53,9 +59,10 @@ It asks you something only when a decision is a one-way door or the request has 
 
 | Skill | Purpose |
 | --- | --- |
-| `ship` | The end-to-end workflow above |
-| `plan` | The shortest path to the goal: reuse, cut, choose a route, slice by risk. Sizes the work and splits anything too big for one pull request |
-| `next` | Where the work stands and the one thing to do next, with the command to paste |
+| `ship` | The end-to-end workflow above, from a request or from an issue |
+| `grill-me` | Interview the user until every decision is made, then file the work as an epic issue with one sub-issue per session-sized part |
+| `plan` | The shortest path to the goal: reuse, cut, choose a route, slice by risk. Sizes the work and sends anything too big for one pull request to `grill-me` |
+| `next` | Where the work stands and the one thing to do next, with the command to paste, including the next open part of an epic |
 | `brief` | Write the prompt for another agent, or turn a rough request into one: goal, context, done-check, limits, reply shape |
 | `debug` | Reproduce, shrink, locate by halving, fix at the origin, pin with a regression test |
 | `goal` | The goal contract: commands that decide whether the task is done. Includes the hillclimb loop for metrics |
@@ -112,7 +119,7 @@ For repos you work on from both systems, `/ult:setup` records check commands tha
 
 **Quality is built before the review.** The plan step removes work before any is done: reuse what exists, strike what the outcome does not need, choose the route with the fewest new concepts. Each slice gets a second-draft pass while its check is green, because the first version that passes was written before the answer was known. The author reads the whole diff once as a stranger before the reviewer sees it. Modular code is defined by what a module hides, so it can be replaced without adding layers.
 
-**Big work is split.** One oversized change is reviewed badly, verified badly and reverted whole. `ult:plan` has four size tests; past any of them the agent ships only the first part and hands back short next steps, each later part with a prompt that stands alone.
+**Big work is decided first, then split into issues.** One oversized change is reviewed badly, verified badly and reverted whole, and the session that builds it fills its context before the end, so its last decisions are its worst. `ult:plan` has four size tests. Past any of them nothing is built: `grill-me` moves the decisions to the user while the user is there, then files parts that each pass the size tests. A part is an issue, not a line in a reply, so it survives the session. Its body repeats the decisions it needs, which lets a fresh session start from a clean context without rediscovering them.
 
 **Generated UI is a default, so the fix is a decision.** A ban list alone moves the model to the next most common choice. The design skill therefore asks for three candidate directions and treats the first as the one everybody gets, requires three named departures from the default with a reason each, and pairs every tell in `SLOP.md` with what to do instead. Copy gets the same treatment in `COPY.md`: four tests (swap, proof, spoken, delete) before a list of words. The part a regex can catch (gradient text, dead links, placeholder names, stock phrases, emoji icons) is in `tells.txt` and is found by `rg` at no model cost. The rest is judged by the critic from screenshots.
 
