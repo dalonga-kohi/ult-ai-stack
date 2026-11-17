@@ -56,6 +56,10 @@ rubric=$(grep -oE 'GRADE code/[0-9]+' agents/reviewer.md | sort -u)
 grep -q "${rubric#GRADE }" skills/grade/SKILL.md || err "skills/grade/SKILL.md does not name the reviewer's rubric ${rubric#GRADE }"
 grep -q '^CLEAN' <(grep -oE 'CLEAN: <[^>]*>' agents/reviewer.md) || err "agents/reviewer.md: the reply shape lost its CLEAN form"
 
+[ "$(awk '/^---$/{n++; next} n==1 && /^tools:/' agents/goldfish.md)" = "tools: Read" ] || err "agents/goldfish.md: the cold reader must have only the Read tool, or it stops being cold"
+grep -q '^VERDICT: READY | NOT READY' agents/goldfish.md || err "agents/goldfish.md: the reply shape lost its VERDICT line"
+grep -q 'ult:goldfish' skills/new/DOCS.md || err "skills/new/DOCS.md: the cold read no longer uses ult:goldfish"
+
 tells_cases() {
   local tells=skills/design/tells.txt tmp hits
   if grep -q '^$' "$tells"; then err "$tells: a blank line matches every line"; return; fi

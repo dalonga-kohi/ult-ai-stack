@@ -20,7 +20,7 @@ A repository with no product code yet and a request for a whole product: build n
 
 1. **Preflight.** If `.ult/task.md` exists, this is a resumed task: read it and continue from the first unticked slice. Otherwise confirm the working tree is clean and create a branch from the default branch (`feat/<slug>` or `fix/<slug>`; from an issue, `feat/<number>-<slug>`). Read the `## Checks` section of the repo's `CLAUDE.md`. If it is missing, run the `ult:setup` skill first.
 
-   **From an issue** (`#13` or its URL): read it with `gh issue view 13 --json title,body,state`, and read the parent named on its first line the same way. If any issue on its `Blocked by` line is still open, stop and name it. If `Needs you` is not `no`, ask for that before anything else. The issue's `Outcome`, `Context` and `Done when` are the request. The decisions in it are made; do not reopen them unless the code makes one impossible, and then stop and say which one.
+   **From an issue** (`#13` or its URL): read it with `gh issue view 13 --json title,body,state`, and read the parent named on its first line the same way. If any issue on its `Blocked by` line is still open, stop and name it. If `Needs you` is not `no`, ask for that before anything else. The issue's `Outcome`, `Covers`, `Context` and `Done when` are the request. If `Context` names a spec in `docs/specs/`, read the sections for the ids it covers. The decisions in it are made; do not reopen them unless the code makes one impossible, and then stop and say which one.
 
 2. **Understand.** Read `docs/map/README.md` and the feature files the request touches. Only if the map does not answer where the change goes, send one `ult:scout` with a specific question. Then tell the user in two sentences what they want and the smallest change that delivers it. Do not wait for a reply.
 
@@ -46,7 +46,7 @@ A repository with no product code yet and a request for a whole product: build n
 
 8. **Review and grade.** Run the code loop in `ult:grade`: one review by `ult:reviewer` with the base branch, the goal contract and the mutant count, then one recheck of the fixes. `CLEAN` is a normal result; do not ask for another review to be sure. UI work was graded in `ult:design`; do not grade it twice.
 
-9. **Map.** If behavior, entry points or verification commands changed, update `docs/map/` in this branch with the `ult:map` skill.
+9. **Map and spec.** If behavior, entry points or verification commands changed, update `docs/map/` in this branch with the `ult:map` skill. From an issue with a spec, update in this branch every `R` or `E` line the code made differ, fill in the part's issue number if the `Parts` table lacks it, and set `Status` to `shipped` when this was the last part.
 
 10. **PR.** Open it with the `ult:pr` skill and apply its merge gate. From an issue, the body ends with `Closes #<number>`.
 

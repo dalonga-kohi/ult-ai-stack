@@ -1,6 +1,6 @@
 ---
 name: new
-description: Turn a loose idea into a defined project. Deep interview on purpose and concept, research on prior art, then docs/PRODUCT.md, ADRs for foundational decisions and a first set of epic issues with sub-issues. Writes no code. Use when starting a project from scratch.
+description: Turn a loose idea into a defined project. Interrogate purpose and concept, research prior art, then write docs/PRODUCT.md and ADRs, test them with a cold reader, and file the first epics with sub-issues. Writes no code. Use when starting a project from scratch.
 argument-hint: <the idea, however loose>
 ---
 
@@ -12,14 +12,14 @@ This is plan mode for a whole product. The idea as first stated is where the wor
 
 - If the directory already holds a product's code, this is not a new project. Run `ult:grill-me` instead.
 - If `.ult/grill.md` starts with `# new:`, the interview is resuming. Read it and continue from the first `Open` line.
-- Otherwise write the idea verbatim to `.ult/grill.md`. Reply with what you think it is in two sentences, the three unknowns that would change it most, and the first purpose question.
+- Otherwise write the idea verbatim to `.ult/grill.md`. Reply with what you think it is in two sentences, the strongest reason it may not be worth building, the three unknowns that would change it most, and the first purpose question.
 - In the same turn, start one `ult:researcher` in the background on prior art. Give it the idea, its purpose as you understand it, and the question "what already does this, how well, and where does it fall short?"
 
 ## 2. Interview
 
-Run [INTERVIEW.md](../grill-me/INTERVIEW.md) through all five layers. Spend most questions on purpose and concept. A weak answer there makes everything below it wrong, and no amount of engineering recovers it.
+Run [INTERVIEW.md](../grill-me/INTERVIEW.md), stance first, through all five layers. Spend most questions and most challenges on purpose and concept. A weak answer there makes everything below it wrong, and no amount of engineering recovers it.
 
-When the prior-art report arrives, put it to the user as a question, not a summary: "<X> already does A and B but not C. Is C why you want this, or is it something else?" When the concept shifts, research again, because a new angle has different prior art. Each later question that research can answer goes to its own `ult:researcher` in the background while you ask something else.
+When the prior-art report arrives, put it to the user as an objection, not a summary: "<X> already does A and B but not C. Is C enough to make someone switch, or is it something else?" If the report says nothing is missing, say plainly that the user may not need to build this, and ask why they still would. When the concept shifts, research again, because a new angle has different prior art. Each later question that research can answer goes to its own `ult:researcher` in the background while you ask something else.
 
 ## 3. Foundations
 
@@ -29,11 +29,11 @@ For each, send one `ult:researcher` with the constraints from the interview and 
 
 ## 4. Docs
 
-Write `docs/PRODUCT.md`, `docs/RESEARCH.md` and one `docs/adr/NNNN-<slug>.md` per foundation with [DOCS.md](DOCS.md). Every line traces to a recorded decision or a cited finding. A gap you notice while writing is a question for the user, not a guess in the doc.
+Write `docs/PRODUCT.md`, `docs/RESEARCH.md` and one `docs/adr/NNNN-<slug>.md` per foundation with [DOCS.md](DOCS.md), following its rules for agent readers. Every line traces to a recorded decision, a challenge or a cited finding. A gap you notice while writing is a question for the user, not a guess in the doc.
 
-**Cold read.** Give `docs/PRODUCT.md`, and nothing else, to a fresh `general-purpose` subagent on `haiku`. Ask it to answer from the file alone, quoting the line it used: who is this for, what problem does it solve, what is the core loop, what will it never do, how will we know it works, what would you build first. It also lists everything it had to guess. Each wrong answer or guess is a hole in the doc. Fix it, asking the user when the interview did not settle it.
+**Cold read.** Run the cold read in [DOCS.md](DOCS.md) on `docs/PRODUCT.md` and the ADRs, with these questions: who is this for, what problem does it solve, what is the core loop, what will it never do, how will we know it works, what would you build first.
 
-Show the user the `Scope` section and the ADR titles (at most 15 lines), point to the files, and revise until they approve.
+Show the user the `Scope` section, the ADR titles, the contested decisions and what the goldfish left under `Open` or `Risks` (at most 20 lines), point to the files, and revise until they approve.
 
 ## 5. Epics
 
@@ -41,7 +41,7 @@ Each capability under `First version` in `docs/PRODUCT.md` becomes one epic, nam
 
 The first part of the first epic is the walking skeleton: the thinnest path through the core loop, end to end on the stack the ADRs chose, with a `fast` check, a `full` check and CI that runs them. Its done-check is the core loop working once through the real entry point. Every other part builds on it.
 
-Show every epic with its parts, one line per part, and ask once to confirm. Revise until the user agrees.
+Write each part's body with [ISSUES.md](../grill-me/ISSUES.md) to `.ult/epic/<e>/<k>.md` and run the cold read on them, each judged alone as the only file its builder will read. Then show every epic with its parts, one line per part, and ask once to confirm. Revise until the user agrees.
 
 ## 6. Repository and issues
 
@@ -51,7 +51,7 @@ Show every epic with its parts, one line per part, and ask once to confirm. Revi
 4. With no GitHub remote, ask for the repository name and whether it is public or private, then run `gh repo create <name> --private --source . --push` (or `--public`). This publishes the docs, so never guess the visibility.
 5. File the epics in the agreed order with [ISSUES.md](../grill-me/ISSUES.md). A part's `Context` cites the `docs/PRODUCT.md` section and the ADRs it rests on by path, and still restates each decision it depends on in one line. Then delete `.ult/grill.md`.
 
-If `gh` is missing or logged out, write the bodies to `.ult/epic/<epic number>/` (`parent.md`, `1.md`, ...), tell the user to run `gh auth login`, and file them once it works.
+If `gh` is missing or logged out, keep the drafts in `.ult/epic/`, tell the user to run `gh auth login`, and file them once it works.
 
 ## 7. Report
 
