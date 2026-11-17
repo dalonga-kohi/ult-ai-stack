@@ -39,7 +39,7 @@ Work too big for one pull request is not built in one go. Start it with an inter
 /ult:grill-me add PDF export
 ```
 
-The agent questions you one decision at a time, gives its recommended answer with each question, and reads the code instead of asking whenever the code can answer. It pins down vague terms and points out where an answer contradicts the code or an earlier answer. Once every branch is decided, it splits the work into parts, each sized for one fresh session, and files them on GitHub as a parent issue labeled `epic` with one sub-issue per part. Every sub-issue holds the decisions it depends on, its done-check and what it builds on, so an agent that never saw the interview can do it:
+The agent questions you about what the feature is for and how it should behave, one decision at a time, with its recommended answer or best guess attached. How it is built is its call: it reads the code, researches how established products handle the same feature, and records those choices as defaults you can veto. It pins down vague terms, reads its understanding back to you, and points out where an answer contradicts the code, the product doc or an earlier answer. Once every branch is decided, it splits the work into parts, each sized for one fresh session, and files them on GitHub as a parent issue labeled `epic` with one sub-issue per part. Every sub-issue holds the decisions it depends on, its done-check and what it builds on, so an agent that never saw the interview can do it:
 
 ```
 Epic: #40 invoices: PDF export
@@ -51,6 +51,24 @@ Then do the parts one by one, each in a clean session: `/ult:ship #41` reads the
 
 It asks you something only when a decision is a one-way door or the request has two readings that lead to different products.
 
+A project that does not exist yet starts one level up:
+
+```
+/ult:new a tool that tells me which of my subscriptions I forgot about
+```
+
+This is plan mode for a whole product. The agent writes no code. It interviews you on purpose first (who has the problem, the last time it happened, what you do today, why nothing existing fits), then the concept, the boundaries and what good looks like, while a research agent maps the prior art and the standards in the background. Findings come back as questions: "X already does A and B but not C. Is C why you want this?" Foundational technical choices (where it runs, where data lives, identity, hosting, license) are researched and decided, and only the ones you will feel are asked, in terms of consequences. The result is committed and filed:
+
+```
+docs/PRODUCT.md       problem, users, core loop, concepts, scenarios, scope, quality bar, risks
+docs/RESEARCH.md      prior art, standards, what is borrowed, why build
+docs/adr/0001-*.md    one file per foundational decision, with the options rejected
+Epics: #1 <capability> (4 parts) | #6 <capability> (3 parts)
+Start: in a new session (/clear), `/ult:ship #2`
+```
+
+Before you see the docs, a fresh agent that has read only `PRODUCT.md` must answer who it is for, the core loop, what it will never do and what to build first. Every guess it makes is a hole that gets fixed. The first part filed is always the walking skeleton: the core loop working once, end to end, with checks and CI, so every later part has something to build on.
+
 ## What is in it
 
 **Always on** (`hooks/core.md`, about 350 words, injected at session start): nine rules covering goal before code, one change per check, never weakening a check, comments, tending the codebase, deferring with issues, guarding context, encoding lessons, and factual reports.
@@ -60,7 +78,8 @@ It asks you something only when a decision is a one-way door or the request has 
 | Skill | Purpose |
 | --- | --- |
 | `ship` | The end-to-end workflow above, from a request or from an issue |
-| `grill-me` | Interview the user until every decision is made, then file the work as an epic issue with one sub-issue per session-sized part |
+| `new` | Plan mode for a new project: interview on purpose and concept, research the prior art, write `PRODUCT.md`, `RESEARCH.md` and ADRs, file the first epics with sub-issues |
+| `grill-me` | Interview the user on the purpose and behavior of a feature, with research, then file the work as an epic issue with one sub-issue per session-sized part. Holds the interview technique both skills share |
 | `plan` | The shortest path to the goal: reuse, cut, choose a route, slice by risk. Sizes the work and sends anything too big for one pull request to `grill-me` |
 | `next` | Where the work stands and the one thing to do next, with the command to paste, including the next open part of an epic |
 | `brief` | Write the prompt for another agent, or turn a rough request into one: goal, context, done-check, limits, reply shape |
@@ -82,6 +101,7 @@ It asks you something only when a decision is a one-way door or the request has 
 | `scout` | Haiku | Find code and report locations, not contents |
 | `verifier` | Haiku | Group and trim a long failing check |
 | `design-scout` | Haiku | Measure reference sites |
+| `researcher` | Sonnet | Answer one research question from primary sources: prior art, standards, where each option breaks, with dates and links |
 | `reviewer` | Sonnet | Read the diff until it can explain it, report only defects it can demonstrate, and grade it: correct, proven, simple, fits. A clean result is normal. Rechecks its own findings after the fixes |
 | `critic` | Sonnet | Judge the rendered UI from screenshots alone and grade it: works, clear, decided, finished, copy |
 
@@ -119,6 +139,12 @@ For repos you work on from both systems, `/ult:setup` records check commands tha
 
 **Quality is built before the review.** The plan step removes work before any is done: reuse what exists, strike what the outcome does not need, choose the route with the fewest new concepts. Each slice gets a second-draft pass while its check is green, because the first version that passes was written before the answer was known. The author reads the whole diff once as a stranger before the reviewer sees it. Modular code is defined by what a module hides, so it can be replaced without adding layers.
 
+**The user owns the what, the agent owns the how.** Interviews go wrong in two opposite ways: the agent asks about libraries the user does not care about, or it builds on a first sentence the user would have corrected. So the interview splits decisions by owner. Purpose, concept, boundaries and quality are asked, in that order, because each answer reframes the next. Implementation is decided by the agent from the code and research and shown as a default. The techniques come from interviewing practice: ladder a solution up to its need and an abstraction down to an instance, ask about the last time instead of a hypothetical, lead with a guess because correcting is easier than authoring, read the whole idea back every few answers, and run a pre-mortem. The interview stops when the agent can predict the next answer, not at a question count.
+
+**Research before asking.** A question a search can answer wastes the user's attention, and an idea that already exists is the most expensive thing to rediscover after building it. A Sonnet researcher reads primary sources, checks that a project is alive, looks for where each option breaks in its users' complaints, and names the standard when one exists. It runs in the background while the interview continues, and its findings return as recommendations or as the next question.
+
+**Docs that later sessions obey.** `PRODUCT.md` says who it is for and what it will never do, ADRs hold decisions that cost more than a pull request to reverse, and `CLAUDE.md` tells every later session to read both. A cold reader tests `PRODUCT.md` before it ships, because a doc only its author understands fails the next agent silently.
+
 **Big work is decided first, then split into issues.** One oversized change is reviewed badly, verified badly and reverted whole, and the session that builds it fills its context before the end, so its last decisions are its worst. `ult:plan` has four size tests. Past any of them nothing is built: `grill-me` moves the decisions to the user while the user is there, then files parts that each pass the size tests. A part is an issue, not a line in a reply, so it survives the session. Its body repeats the decisions it needs, which lets a fresh session start from a clean context without rediscovering them.
 
 **Generated UI is a default, so the fix is a decision.** A ban list alone moves the model to the next most common choice. The design skill therefore asks for three candidate directions and treats the first as the one everybody gets, requires three named departures from the default with a reason each, and pairs every tell in `SLOP.md` with what to do instead. Copy gets the same treatment in `COPY.md`: four tests (swap, proof, spoken, delete) before a list of words. The part a regex can catch (gradient text, dead links, placeholder names, stock phrases, emoji icons) is in `tells.txt` and is found by `rg` at no model cost. The rest is judged by the critic from screenshots.
@@ -133,7 +159,7 @@ For repos you work on from both systems, `/ult:setup` records check commands tha
 
 **Lessons become structure.** A correction or a repeated mistake is turned into a test, a type, a lint rule or a map gotcha, so the next session cannot repeat it and no context is spent remembering it.
 
-**Few parts.** Fourteen skills and five agents. A rule is in the stack only if an agent does worse without it.
+**Few parts.** Sixteen skills and six agents. A rule is in the stack only if an agent does worse without it.
 
 ## Changing it
 
@@ -142,6 +168,7 @@ Edit the files and run `bash scripts/check.sh`. It validates the manifests, enfo
 - `skills/pr/SKILL.md`, section "Merge gate": what may merge without you.
 - `skills/design/REFERENCES.md`: the sites you consider the best.
 - `skills/design/SLOP.md`, `COPY.md` and `tells.txt`: what you count as a tell. Add one whenever you spot a new giveaway.
+- `skills/grill-me/INTERVIEW.md`: how the interview asks, what it leaves to the agent and when it stops.
 - `skills/plan/SKILL.md`, step "Size": when work counts as too big for one pull request.
 - `agents/reviewer.md`, section "Admit a finding only when": how strict the reviewer is.
 - `skills/grade/SKILL.md`, section "Loop": the bar. The rubrics are in `agents/reviewer.md` and `agents/critic.md`.

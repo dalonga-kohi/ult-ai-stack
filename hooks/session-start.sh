@@ -11,4 +11,7 @@ fi
 if [ -f "$root/.ult/task.md" ]; then
   echo "Unfinished task: .ult/task.md. Read it before anything else and continue from the first unticked slice."
 fi
+if [ -f "$root/.ult/grill.md" ]; then
+  echo "Unfinished interview: .ult/grill.md. Its first line names the skill; run that skill to resume from the first Open line."
+fi
 exit 0

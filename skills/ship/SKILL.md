@@ -10,6 +10,8 @@ You own the outcome from request to PR. Do not stop to ask for approval between 
 
 ## Size the work first
 
+A repository with no product code yet and a request for a whole product: build nothing and run `ult:new` with the request.
+
 - **Small**: one module, the change is obvious, about 30 lines or fewer. Skip steps 2 and 4. Still write the goal and still verify.
 - **Standard**: fits one pull request. Run every step.
 - **Large**: any size test in `ult:plan` is true. Build nothing, even when asked to build it all. Run `ult:grill-me` with the request: it ends in issues, and each one is shipped in its own session. If the task is already a sub-issue, its split was too coarse. Do not interview again: split it into sub-issues of the same parent with the filing steps of `ult:grill-me` (its ISSUES.md), close it as replaced by them, and stop.

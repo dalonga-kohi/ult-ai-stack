@@ -42,7 +42,7 @@ done
 
 while IFS=: read -r file target; do
   [ -f "$(dirname "$file")/$target" ] || err "$file: broken link $target"
-done < <(grep -oH '\]([A-Z][A-Z_-]*\.md)' skills/*/*.md README.md 2>/dev/null | sed -E 's/\]\((.*)\)$/\1/')
+done < <(grep -oHE '\]\((\.\./[a-z-]+/)?[A-Z][A-Z_-]*\.md\)' skills/*/*.md README.md 2>/dev/null | sed -E 's/\]\((.*)\)$/\1/')
 
 if grep -nE '\$\(cat <<|<<-?.?EOF' skills/*/*.md agents/*.md; then
   err "skills and agents must not use heredocs: they do not run in PowerShell"
@@ -149,6 +149,11 @@ session_case() {
   out=$(CLAUDE_PLUGIN_ROOT="$root" CLAUDE_PROJECT_DIR="$root" "$@")
   [ "$(printf '%s\n' "$out" | head -1 | tr -d '\r')" = "# ult core rules (always on)" ] || err "$label did not start with the core rules"
   printf '%s' "$out" | grep -q "Quiet runner" || err "$label did not print the quiet runner"
+  printf '%s' "$out" | grep -q "Unfinished interview" && err "$label reported an interview that does not exist"
+  local tmp; tmp=$(mktemp -d); mkdir "$tmp/.ult" && echo "# new: x" > "$tmp/.ult/grill.md"
+  out=$(CLAUDE_PLUGIN_ROOT="$root" CLAUDE_PROJECT_DIR="$tmp" "$@")
+  printf '%s' "$out" | grep -q "Unfinished interview: .ult/grill.md" || err "$label did not point to an unfinished interview"
+  rm -rf "$tmp"
 }
 
 guard_cases commit-guard.sh bash "$root/hooks/commit-guard.sh"

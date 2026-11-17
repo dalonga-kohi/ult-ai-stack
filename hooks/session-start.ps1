@@ -14,4 +14,7 @@ if (Test-Path -LiteralPath (Join-Path $root 'docs/map/README.md')) {
 if (Test-Path -LiteralPath (Join-Path $root '.ult/task.md')) {
   Write-Output "Unfinished task: .ult/task.md. Read it before anything else and continue from the first unticked slice."
 }
+if (Test-Path -LiteralPath (Join-Path $root '.ult/grill.md')) {
+  Write-Output "Unfinished interview: .ult/grill.md. Its first line names the skill; run that skill to resume from the first Open line."
+}
 exit 0

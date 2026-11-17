@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Interview the user about a feature until every decision is made, then split it into a parent GitHub issue with sub-issues, each small enough for one fresh session. Use for large or vague work, or when asked to grill a plan.
+description: Interview the user about a feature until its purpose and product decisions are settled, researching prior art along the way, then file it as an epic issue with sub-issues sized for one fresh session. Use for large or vague work, or to grill a plan.
 argument-hint: <the feature or plan>
 ---
 
@@ -10,23 +10,15 @@ Large work goes wrong in one session for two reasons: the agent makes the decisi
 
 ## 1. Ground
 
-Read the repo's `CLAUDE.md`, `docs/map/README.md` and the feature files the request touches. Send one `ult:scout` only when the map does not say where the work lands.
-
-Keep the interview in `.ult/grill.md`: the request on the first line, then one line per settled decision. If the file already exists, the interview is resuming. Read it and continue from the first open question.
+Read the repo's `CLAUDE.md`, `docs/PRODUCT.md` and `docs/adr/` if they exist, `docs/map/README.md` and the feature files the request touches. Send one `ult:scout` only when the map does not say where the work lands. If `.ult/grill.md` starts with `# grill-me:`, the interview is resuming: read it and continue from the first `Open` line.
 
 ## 2. Grill
 
-List what must be decided and which decisions depend on which. Walk that tree from the root, one question per message:
+Run [INTERVIEW.md](INTERVIEW.md). In an existing repo, the questions that matter are what the feature is for and how it behaves for the people who use it. The code answers how it is built: read it, follow its patterns, and record those choices as `[default]`.
 
-- Ask only what you cannot answer yourself. When the code, the map or the docs answer a question, read them and state the answer instead of asking it.
-- A question earns its place when two plausible answers lead to different code. Skip trivia.
-- Give your recommended answer and a one-line reason, so the user can just reply "yes". When the choice is between discrete options, use AskUserQuestion with 2 to 4 options and put the recommended one first.
-- When an answer contradicts the code, the map or an earlier answer, quote the path or the earlier decision. That contradiction is the next question.
-- Pin down any overloaded word ("account", "export", "user", "sync") before the decisions that depend on it. Write the agreed meaning under `Terms`.
-- Ask about what the user skipped: empty, failure and permission cases, existing data, the other callers of whatever changes, how each outcome will be verified.
-- Append the settled decision to `.ult/grill.md` as `<question> -> <answer>` before asking the next question.
-
-Stop when every branch is either decided or listed as out of scope. Show the decisions (at most 15 lines) and ask once whether anything is wrong or missing.
+- When the feature has prior art (export, search, sharing, notifications, permissions, billing), send one `ult:researcher` in the background on how established products handle it and what users expect, while you ask the purpose questions.
+- When an answer contradicts `docs/PRODUCT.md` (a user it is not for, something under `Never`), quote the line. Either the answer or the product doc changes; the user decides which.
+- A settled decision that is a one-way door by the test in [DOCS.md](../new/DOCS.md) becomes an ADR. Draft it with that template in the `Context` of the first part that depends on it; that part adds it to `docs/adr/`.
 
 ## 3. Slice
 

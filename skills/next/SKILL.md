@@ -9,18 +9,18 @@ Answer "where am I and what do I do now" from recorded state, in a few lines. Ch
 
 ## Read, in this order, and stop reading a source once it is empty
 
-1. `.ult/task.md`: an unfinished task. The first unticked slice is the next step.
+1. `.ult/task.md`: an unfinished task. The first unticked slice is the next step. `.ult/grill.md`: an unfinished interview; its first `Open` line is the next question.
 2. `git status --short --branch` and `git log --oneline -5`: uncommitted work, and a branch ahead of its remote.
 3. `gh pr list --author "@me" --state open --json number,title,reviewDecision,statusCheckRollup`: pull requests waiting on checks, review or a merge.
-4. `gh issue list --label epic --state open --json number,title`: epics from `ult:grill-me`. For each one, list its parts with `gh api "repos/{owner}/{repo}/issues/<n>/sub_issues" --jq ".[] | [.number, .state, .title] | @tsv"`, or read the `Parts` checklist in its body if that call fails. Read the `Blocked by` line of the open parts only.
+4. `gh issue list --label epic --state open --json number,title`: epics from `ult:grill-me` and `ult:new`, oldest first. For each one, list its parts with `gh api "repos/{owner}/{repo}/issues/<n>/sub_issues" --jq ".[] | [.number, .state, .title] | @tsv"`, or read the `Parts` checklist in its body if that call fails. Read the `Blocked by` line of the open parts only.
 
 ## Pick the one next action, first match wins
 
 1. A check is red on an open pull request: fix it.
 2. Uncommitted changes: finish and commit them, or say what they are and ask.
-3. An unticked slice in the task file: `/ult:ship` resumes it.
+3. An unticked slice in the task file: `/ult:ship` resumes it. An unfinished interview: `/ult:grill-me` or `/ult:new`, as its first line says, resumes it.
 4. A pull request that is green and waiting only on the user: name it.
-5. An open part of an epic whose blockers are all closed, first in the epic's order: `/ult:ship #<number>` in a new session (/clear).
+5. An open part whose blockers are all closed, first in the oldest epic's order: `/ult:ship #<number>` in a new session (/clear).
 6. An epic whose parts are all closed: close it with `gh issue close <number>`.
 7. Nothing recorded: say so in one line.
 

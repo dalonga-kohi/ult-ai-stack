@@ -7,7 +7,7 @@ Write every body to a file with the Write tool and pass it with `--body-file`. T
 Run `gh label list --search epic`. If no `epic` label is listed, create it:
 
 ```
-gh label create epic --description "Parent issue split into sub-issues by ult:grill-me"
+gh label create epic --description "Parent issue split into sub-issues by ult:grill-me or ult:new"
 ```
 
 ## 2. Parent

@@ -6,7 +6,7 @@
     {
       "name": "ult",
       "description": "Feature to merged PR with verifiable goals, a tended codebase and a small context footprint.",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "source": "./"
     }
   ]
