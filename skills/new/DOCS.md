@@ -9,10 +9,10 @@ These docs are read by every later session, mid-task, with no memory of the inte
 - **Fixed headings, in the template's order.** An agent looks for `## Requirements`, not for wherever the author put them. Drop a section that has nothing true to say; never rename one.
 - **The first line answers the doc.** One sentence: what it is and for whom. A reader that needs only that stops there.
 - **One fact per bullet.** A bullet holding two facts gets half-read. No paragraphs except `Problem` and `Why`.
-- **Stable IDs.** Requirements are `R1`, `R2`, edge cases `E1`, scenarios `S1`. An ID is never reused or renumbered; a dropped one stays as `R4 (dropped: <why>)`. Issues, tests and later docs cite the ID.
+- **Stable IDs.** Requirements are `R1`, `R2`, edge cases `E1`, scenarios `S1`, decisions `D1`. An ID is never reused or renumbered; a dropped one stays as `R4 (dropped: <why>)`. Issues, tests and later docs cite the ID, so changing a line's meaning in place is how a doc changes, and the diff since an issue's pin shows it.
 - **Testable or it is not a requirement.** Each states observable behavior with its value ("exports in under 2 s for 1,000 rows") and names its check. A line no check could fail goes to `Open` as a question.
 - **One word per thing.** Use the terms in `PRODUCT.md` `Concepts` or the doc's `Terms`, never a synonym.
-- **Point, do not copy.** Link the ADR or the other doc's section instead of restating it. Issues are the one exception: they restate, because they must stand alone.
+- **Point, do not copy.** Cite the id, the ADR or the other doc's section instead of restating it. This holds for issues too: they cite ids at a pinned commit (see `ult:grill-me` ISSUES.md), because a copy goes stale.
 - **Unknowns are visible.** What is undecided goes under `Open` with who answers it; what is believed without evidence goes under `Risks` as `unverified`. Never smooth a gap over with a plausible sentence.
 - **Sized for one read.** Each template has a cap. A doc that outgrows it holds two concerns: split it and link the halves.
 - **No placeholders, no filler.** Concrete, in the product's words. A sentence that would fit any product says nothing about this one.
@@ -102,7 +102,7 @@ Status: agreed | shipped | Epic: #<n> | Product: [<section>](../PRODUCT.md#<anch
 - **<term>**: <meaning in this feature>
 
 ## Decisions
-- <decision> [user | default | user, contested]: <reason>. Rejected: <option>: <why not>
+- **D1** <decision> [user | default | user, contested]: <reason>. Rejected: <option>: <why not>
 
 ## Out of scope
 - <item>: <why, and where it went: later, never, #issue>

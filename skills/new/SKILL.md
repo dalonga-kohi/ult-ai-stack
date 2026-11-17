@@ -41,15 +41,15 @@ Each capability under `First version` in `docs/PRODUCT.md` becomes one epic, nam
 
 The first part of the first epic is the walking skeleton: the thinnest path through the core loop, end to end on the stack the ADRs chose, with a `fast` check, a `full` check and CI that runs them. Its done-check is the core loop working once through the real entry point. Every other part builds on it.
 
-Write each part's body with [ISSUES.md](../grill-me/ISSUES.md) to `.ult/epic/<e>/<k>.md` and run the cold read on them, each judged alone as the only file its builder will read. Then show every epic with its parts, one line per part, and ask once to confirm. Revise until the user agrees.
+Write each part's body with [ISSUES.md](../grill-me/ISSUES.md) to `.ult/epic/<e>/<k>.md` and run the cold read on them, each judged with `docs/PRODUCT.md` and the ADRs as the only files its builder will read. Then show every epic with its parts, one line per part, and ask once to confirm. Revise until the user agrees.
 
 ## 6. Repository and issues
 
 1. If this is not a git repository, run `git init`. Add `.ult/` to `.gitignore`.
 2. Add the `Product` section from DOCS.md to `CLAUDE.md`, creating the file if it is absent.
 3. Commit the docs: `docs: define <name>: product, research and decisions`.
-4. With no GitHub remote, ask for the repository name and whether it is public or private, then run `gh repo create <name> --private --source . --push` (or `--public`). This publishes the docs, so never guess the visibility.
-5. File the epics in the agreed order with [ISSUES.md](../grill-me/ISSUES.md). A part's `Context` cites the `docs/PRODUCT.md` section and the ADRs it rests on by path, and still restates each decision it depends on in one line. Then delete `.ult/grill.md`.
+4. With a GitHub remote, push the commit to its default branch. With none, ask for the repository name and whether it is public or private, then run `gh repo create <name> --private --source . --push` (or `--public`). This publishes the docs, so never guess the visibility.
+5. File the epics in the agreed order with [ISSUES.md](../grill-me/ISSUES.md). A part cites `docs/PRODUCT.md` and the ADRs at the pin, by id, and copies none of their text. Then delete `.ult/grill.md`.
 
 If `gh` is missing or logged out, keep the drafts in `.ult/epic/`, tell the user to run `gh auth login`, and file them once it works.
 

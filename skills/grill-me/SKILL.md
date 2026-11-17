@@ -41,15 +41,15 @@ Fill the spec's `Parts` table, then write each sub-issue body with [ISSUES.md](I
 
 ## 5. Cold read
 
-Run the cold read in [DOCS.md](../new/DOCS.md) on the spec and every draft in `.ult/epic/`. Tell the goldfish to judge each draft alone, as the only file its builder will read, and to ask of each: what do you build, how do you know you are done, what is not yours.
+Run the cold read in [DOCS.md](../new/DOCS.md) on the spec and every draft in `.ult/epic/`. Tell the goldfish to judge each draft with the spec as the only files its builder will read, and to ask of each: what do you build, how do you know you are done, what is not yours, and does every id it cites exist.
 
 Then show the user the spec's `Requirements` and `Parts`, the contested decisions with your objection, and what the goldfish left under `Open` or `Risks` (at most 20 lines). Revise until they approve. If the whole request fits in one part, it needs no parent: it will be filed as a single issue.
 
 ## 6. Commit and file
 
-1. Commit the spec on a branch `docs/<slug>` (`docs: spec <feature>`), push it and open a pull request with `gh pr create --body-file`. The user approved its content in step 5, so merge it with `gh pr merge --squash --delete-branch` once CI is green. If branch protection requires a review, leave it open and say so: the parts restate what they need and do not wait for it.
-2. File the issues with [ISSUES.md](ISSUES.md): the parent, then the sub-issues in order, then the links. Each part's `Context` cites the spec path and its `R` and `E` ids, and still restates each requirement it covers in full. Fill the issue numbers into the spec's `Parts` table in the same pull request if it is still open, or in the first part's otherwise.
-3. Delete `.ult/grill.md` once the spec and the parent's body hold every decision.
+1. Commit the spec on a branch `docs/<slug>` (`docs: spec <feature>`), push it and open a pull request with `gh pr create --body-file`. The user approved its content in step 5, so merge it with `gh pr merge --squash --delete-branch` once CI is green. Issues cite the spec at a commit on the default branch, so nothing is filed before the merge. If branch protection requires a review, keep the drafts in `.ult/epic/`, report the open PR, and file once it is merged.
+2. File the issues with [ISSUES.md](ISSUES.md): the parent, then the sub-issues in order, then the links. Each part cites the spec at the pin and the ids it covers and rests on, and copies none of their text. The first part's pull request fills the issue numbers into the spec's `Parts` table.
+3. Delete `.ult/grill.md` once the spec holds every decision.
 
 If `gh` is missing or logged out, keep the drafts in `.ult/epic/`, tell the user to run `gh auth login`, and file them once it works.
 

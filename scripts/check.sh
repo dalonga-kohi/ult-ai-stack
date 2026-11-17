@@ -58,6 +58,8 @@ grep -q '^CLEAN' <(grep -oE 'CLEAN: <[^>]*>' agents/reviewer.md) || err "agents/
 
 [ "$(awk '/^---$/{n++; next} n==1 && /^tools:/' agents/goldfish.md)" = "tools: Read" ] || err "agents/goldfish.md: the cold reader must have only the Read tool, or it stops being cold"
 grep -q '^VERDICT: READY | NOT READY' agents/goldfish.md || err "agents/goldfish.md: the reply shape lost its VERDICT line"
+grep -q '@ <pin>' skills/grill-me/ISSUES.md || err "skills/grill-me/ISSUES.md: issues must cite the docs at a pinned commit"
+grep -qi 'restated in full' skills/grill-me/ISSUES.md && err "skills/grill-me/ISSUES.md: issues cite ids, they do not copy requirement text"
 grep -q 'ult:goldfish' skills/new/DOCS.md || err "skills/new/DOCS.md: the cold read no longer uses ult:goldfish"
 
 tells_cases() {
