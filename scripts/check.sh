@@ -13,16 +13,16 @@ for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json hooks/hooks.
   "$py" -m json.tool "$f" >/dev/null 2>&1 || err "$f: invalid JSON"
 done
 
-for f in hooks/*.sh scripts/*.sh bin/ult-run; do
+for f in hooks/*.sh scripts/*.sh bin/ult-run bin/ult-doccheck; do
   bash -n "$f" || err "$f: syntax"
 done
 
-for f in hooks/*.sh bin/ult-run; do
+for f in hooks/*.sh bin/ult-run bin/ult-doccheck; do
   [ -f "${f%.sh}.ps1" ] || err "$f: no PowerShell twin ${f%.sh}.ps1"
 done
 
 words=$(wc -w < hooks/core.md)
-[ "$words" -le 350 ] || err "hooks/core.md: $words words, budget 350"
+[ "$words" -le 450 ] || err "hooks/core.md: $words words, budget 450"
 
 for f in skills/*/SKILL.md agents/*.md; do
   name=$(awk '/^---$/{n++; next} n==1 && /^name:/{sub(/^name:[ ]*/, ""); print}' "$f")
@@ -58,8 +58,11 @@ grep -q '^CLEAN' <(grep -oE 'CLEAN: <[^>]*>' agents/reviewer.md) || err "agents/
 
 [ "$(awk '/^---$/{n++; next} n==1 && /^tools:/' agents/goldfish.md)" = "tools: Read" ] || err "agents/goldfish.md: the cold reader must have only the Read tool, or it stops being cold"
 grep -q '^VERDICT: READY | NOT READY' agents/goldfish.md || err "agents/goldfish.md: the reply shape lost its VERDICT line"
-grep -q '@ <pin>' skills/grill-me/ISSUES.md || err "skills/grill-me/ISSUES.md: issues must cite the docs at a pinned commit"
-grep -qi 'restated in full' skills/grill-me/ISSUES.md && err "skills/grill-me/ISSUES.md: issues cite ids, they do not copy requirement text"
+grep -q '@ <pin>' skills/grill-me/ISSUES.md && err "skills/grill-me/ISSUES.md: a sub-issue must be self-contained, not cite docs at a pin"
+grep -q '^## Requirements' skills/grill-me/ISSUES.md || err "skills/grill-me/ISSUES.md: sub-issues must carry their requirements in full"
+grep -rn 'docs/specs' skills agents hooks && err "docs/specs is gone: requirements live in issues, then in code and tests"
+grep -q '^COPY ' agents/goldfish.md || err "agents/goldfish.md: the reply shape lost its COPY line, the drift finding for durable docs"
+grep -q '\*\*Code is the truth' hooks/core.md || err "hooks/core.md: lost the rule that code is the truth"
 grep -q 'ult:goldfish' skills/new/DOCS.md || err "skills/new/DOCS.md: the cold read no longer uses ult:goldfish"
 
 tells_cases() {
@@ -150,6 +153,23 @@ runner_cases() {
   rm -rf "$tmp"
 }
 
+doccheck_cases() {
+  local label=$1 tmp out code; shift
+  tmp=$(mktemp -d)
+  mkdir -p "$tmp/src/a" "$tmp/docs/map"
+  printf 'export function createOrder() {}\n' > "$tmp/src/a/order.ts"
+  printf '# Map\n- [Orders](orders.md): `src/a/`\n- Start: `pnpm dev src/a`\n' > "$tmp/docs/map/README.md"
+  printf '# Orders\n- API: `POST /api/orders` -> `src/a/order.ts` `createOrder`\n- `<path>` `.ult/task.md` `feat/<slug>` [x](https://x.y) [top](#orders)\n```\n`nope/x.ts`\n```\n' > "$tmp/docs/map/orders.md"
+  out=$(CLAUDE_PROJECT_DIR="$tmp" "$@"); code=$?
+  { [ $code -eq 0 ] && [[ $out == "PASS 4 pointers"* ]]; } || err "$label: a correct map should pass with 4 pointers, got exit $code: $out"
+  printf -- '- `src/gone.ts` and `src/a/order.ts` `renamedFn` [B](b.md)\n' >> "$tmp/docs/map/orders.md"
+  out=$(CLAUDE_PROJECT_DIR="$tmp" "$@"); code=$?
+  { [ $code -eq 1 ] && [ "$(printf '%s\n' "$out" | grep -c '^BROKEN docs/map/orders.md:7 ')" -eq 3 ] && [[ $(printf '%s\n' "$out" | tail -1) == "FAIL 3 of 8 "* ]]; } || err "$label: a missing path, a renamed symbol and a dead link should be 3 BROKEN lines, got exit $code: $out"
+  out=$(CLAUDE_PROJECT_DIR="$tmp/src" "$@"); code=$?
+  { [ $code -eq 0 ] && [[ $out == SKIP* ]]; } || err "$label: a repo with no map should skip, got exit $code: $out"
+  rm -rf "$tmp"
+}
+
 session_case() {
   local label=$1 out; shift
   out=$(CLAUDE_PLUGIN_ROOT="$root" CLAUDE_PROJECT_DIR="$root" "$@")
@@ -163,6 +183,7 @@ session_case() {
 }
 
 guard_cases commit-guard.sh bash "$root/hooks/commit-guard.sh"
+doccheck_cases ult-doccheck bash "$root/bin/ult-doccheck"
 runner_cases ult-run 'seq 1 500' 'seq 1 500; exit 3' bash "$root/bin/ult-run"
 session_case session-start.sh bash hooks/session-start.sh
 CLAUDE_PROJECT_DIR="$root" bash hooks/commit-guard.sh </dev/null 2>/dev/null || err "this repo's own diff trips commit-guard.sh"
@@ -170,6 +191,7 @@ CLAUDE_PROJECT_DIR="$root" bash hooks/commit-guard.sh </dev/null 2>/dev/null || 
 if [ -n "$ps" ]; then
   guard_cases commit-guard.ps1 "$ps" -NoProfile -ExecutionPolicy Bypass -File "$root/hooks/commit-guard.ps1"
   runner_cases ult-run.ps1 '1..500' '1..500; exit 3' "$ps" -NoProfile -ExecutionPolicy Bypass -File "$root/bin/ult-run.ps1"
+  doccheck_cases ult-doccheck.ps1 "$ps" -NoProfile -ExecutionPolicy Bypass -File "$root/bin/ult-doccheck.ps1"
   session_case session-start.ps1 "$ps" -NoProfile -ExecutionPolicy Bypass -File "$root/hooks/session-start.ps1"
   CLAUDE_PROJECT_DIR="$root" "$ps" -NoProfile -ExecutionPolicy Bypass -File "$root/hooks/commit-guard.ps1" </dev/null 2>/dev/null || err "this repo's own diff trips commit-guard.ps1"
 fi
