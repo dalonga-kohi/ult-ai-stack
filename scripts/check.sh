@@ -161,11 +161,14 @@ doccheck_cases() {
   printf '# Map\n- [Orders](orders.md): `src/a/`\n- Start: `pnpm dev src/a`\n' > "$tmp/docs/map/README.md"
   printf '# Orders\n- API: `POST /api/orders` -> `src/a/order.ts` `createOrder`\n- `<path>` `.ult/task.md` `feat/<slug>` [x](https://x.y) [top](#orders)\n```\n`nope/x.ts`\n```\n' > "$tmp/docs/map/orders.md"
   out=$(CLAUDE_PROJECT_DIR="$tmp" "$@"); code=$?
+  out=${out//$'\r'/}
   { [ $code -eq 0 ] && [[ $out == "PASS 4 pointers"* ]]; } || err "$label: a correct map should pass with 4 pointers, got exit $code: $out"
   printf -- '- `src/gone.ts` and `src/a/order.ts` `renamedFn` [B](b.md)\n' >> "$tmp/docs/map/orders.md"
   out=$(CLAUDE_PROJECT_DIR="$tmp" "$@"); code=$?
+  out=${out//$'\r'/}
   { [ $code -eq 1 ] && [ "$(printf '%s\n' "$out" | grep -c '^BROKEN docs/map/orders.md:7 ')" -eq 3 ] && [[ $(printf '%s\n' "$out" | tail -1) == "FAIL 3 of 8 "* ]]; } || err "$label: a missing path, a renamed symbol and a dead link should be 3 BROKEN lines, got exit $code: $out"
   out=$(CLAUDE_PROJECT_DIR="$tmp/src" "$@"); code=$?
+  out=${out//$'\r'/}
   { [ $code -eq 0 ] && [[ $out == SKIP* ]]; } || err "$label: a repo with no map should skip, got exit $code: $out"
   rm -rf "$tmp"
 }
